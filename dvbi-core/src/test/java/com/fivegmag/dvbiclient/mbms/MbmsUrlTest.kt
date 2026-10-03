@@ -46,6 +46,26 @@ class MbmsUrlTest {
     }
 
     @Test
+    fun rfc3986Clause3_2_2ABracketedHostIsAnIpv6AddressOrIpvFuture() {
+        for (u in listOf(
+            "mbms://[::1]/userservice/1",
+            "mbms://[2001:db8::7]",
+            "mbms://[v1.fe]",
+            "mbms://[1:2:3:4:5:6:7:8]",
+            "mbms://[::ffff:192.0.2.1]/a",
+        )) assertNull(u, MbmsUrl.problem(u))
+        for (u in listOf(
+            "mbms://[1]/x",
+            "mbms://[:]",
+            "mbms://[::g]",
+            "mbms://[1::2::3]",
+            "mbms://[1:2:3:4:5:6:7:8:9]",
+            "mbms://[::256.1.1.1]",
+            "mbms://[v1.]",
+        )) assertNotNull(u, MbmsUrl.problem(u))
+    }
+
+    @Test
     fun theServiceIdIsThePartBeforeTheFirstAmpersand() {
         assertEquals("mbms://service1000.mbms.operator.com", MbmsUrl.serviceId("mbms://service1000.mbms.operator.com&label=http://www.example.com/v.mp4"))
         assertEquals("mbms://example.com/userservice/1", MbmsUrl.serviceId("mbms://example.com/userservice/1"))

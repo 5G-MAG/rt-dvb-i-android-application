@@ -35,9 +35,33 @@ object MbmsUrl {
     private const val USERINFO = "(?:[$U$SUB:]|$PCT)*"
     private const val REG_NAME = "(?:[$U$SUB]|$PCT)+"
     private const val IPV4 = "(?:\\d{1,3}\\.){3}\\d{1,3}"
-    private const val IP_LITERAL = "\\[[0-9A-Fa-f:.]+\\]"   // IPv6address; IPvFuture is not accepted
-    private const val HOST = "(?:$IP_LITERAL|$IPV4|$REG_NAME)"
-    private const val AUTHORITY = "(?:$USERINFO@)?$HOST(?::\\d*)?"
+
+    // RFC 3986 clause 3.2.2: IP-literal = "[" ( IPv6address / IPvFuture ) "]", IPv6address in its
+    // nine forms over h16 = 1*4HEXDIG and ls32 = ( h16 ":" h16 ) / IPv4address, dec-octet for that
+    // IPv4address, and IPvFuture = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" ). "v" is
+    // matched in either case (the clause: "starts with "v" (case-insensitive)"); "&" stays out of
+    // sub-delims, as everywhere in the prefix. The same productions as rt-dvb-i-application
+    // public/mbms-url.js (f0c69f5).
+    private const val DEC_OCTET = "(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)"
+    private const val H16 = "[0-9A-Fa-f]{1,4}"
+    private const val LS32 = "(?:$H16:$H16|$DEC_OCTET(?:\\.$DEC_OCTET){3})"
+    private fun h16c(n: Int) = "(?:$H16:){$n}"                       // n( h16 ":" )
+    private fun before(n: Int) = "(?:(?:$H16:){0,$n}$H16)?"          // [ *n( h16 ":" ) h16 ]
+    private val IPV6 = listOf(
+        "${h16c(6)}$LS32",
+        "::${h16c(5)}$LS32",
+        "(?:$H16)?::${h16c(4)}$LS32",
+        "${before(1)}::${h16c(3)}$LS32",
+        "${before(2)}::${h16c(2)}$LS32",
+        "${before(3)}::$H16:$LS32",
+        "${before(4)}::$LS32",
+        "${before(5)}::$H16",
+        "${before(6)}::",
+    ).joinToString("|", "(?:", ")")
+    private const val IPV_FUTURE = "[vV][0-9A-Fa-f]+\\.[$U$SUB:]+"
+    private val IP_LITERAL = "\\[(?:$IPV6|$IPV_FUTURE)\\]"
+    private val HOST = "(?:$IP_LITERAL|$IPV4|$REG_NAME)"
+    private val AUTHORITY = "(?:$USERINFO@)?$HOST(?::\\d*)?"
     private const val PATH_ABEMPTY = "(?:/(?:[$U$SUB:@]|$PCT)*)*"
     private const val MID_VALUE = "(?:[$U;?:@=+$,/]|$PCT)+"
     private const val RESOURCE_URI = "[A-Za-z][A-Za-z0-9+.\\-]*:(?:[$U:/?#\\[\\]@!$&'()*+,;=]|$PCT)*"
