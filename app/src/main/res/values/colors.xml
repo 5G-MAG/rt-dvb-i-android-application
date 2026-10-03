@@ -38,9 +38,4 @@ https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
     <color name="badge_5g_ok">#FFFFB340</color>
     <color name="badge_5g_bad">#FFFF6961</color>
     <color name="badge_neutral">#FFB3B3B3</color>
-
-    <color name="warning_bg">#FFFFF3CD</color>
-    <color name="warning_fg">#FF5C4400</color>
-    <color name="badge_5g">#FF6A1B9A</color>
-    <color name="text_secondary">#FF5F6368</color>
 </resources>

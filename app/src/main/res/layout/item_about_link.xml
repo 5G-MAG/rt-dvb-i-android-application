@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Daniel Silhavy (5G-MAGflix design), Jordi J. Gimenez (DVB-I adaptation)
+Copyright: (C) 2023-2026 Fraunhofer FOKUS; (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+Derived from rt-5gms-application fivegmag_5GMSdAwareApplication (5G-MAGflix) res/layout/activity_about.xml.
+-->
+<!-- One link of the About screen: an icon and a blue label, as 5G-MAGflix's contact rows. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="48dp"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/linkIcon"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:id="@+id/linkLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:layout_weight="1"
+        android:textColor="@color/fivegmag_blue"
+        android:textSize="15sp"
+        tools:text="GitHub" />
+</LinearLayout>

@@ -121,6 +121,26 @@ abstract class CleartextConfigTask extends DefaultTask {
     }
 }
 
+// The repository's LICENSE as res/raw/license.txt, for the licence screen.
+abstract class LicenseResourceTask extends DefaultTask {
+    @InputFile
+    abstract RegularFileProperty getLicense()
+
+    @OutputDirectory
+    abstract DirectoryProperty getOutputDir()
+
+    @TaskAction
+    void write() {
+        def dir = getOutputDir().get().dir('raw').asFile
+        dir.mkdirs()
+        new File(dir, 'license.txt').text = getLicense().get().asFile.text
+    }
+}
+
+def licenseResource = tasks.register('generateLicenseResource', LicenseResourceTask) {
+    license = rootProject.layout.projectDirectory.file('LICENSE')
+}
+
 def cleartextConfig = tasks.register('generateCleartextConfig', CleartextConfigTask) {
     hosts = providers.gradleProperty('dvbiCleartextHosts').orElse('192.168.1.202')
 }
@@ -128,5 +148,6 @@ def cleartextConfig = tasks.register('generateCleartextConfig', CleartextConfigT
 androidComponents {
     onVariants(selector().all()) { variant ->
         variant.sources.res.addGeneratedSourceDirectory(cleartextConfig, CleartextConfigTask::getOutputDir)
+        variant.sources.res.addGeneratedSourceDirectory(licenseResource, LicenseResourceTask::getOutputDir)
     }
 }

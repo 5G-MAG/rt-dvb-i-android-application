@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Jordi J. Gimenez (5G-MAG)
+Copyright: (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+-->
+<!-- The background of the 5G-MAG repository banners (repo-starter generate_banner.py, after the
+     website's .topic-banner): #003580 to #00a0d2, under black from 62 % to 18 %, radius 14. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:angle="0" android:startColor="#FF003580" android:endColor="#FF00A0D2" />
+            <corners android:radius="14dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:angle="0" android:startColor="#9E000000" android:centerColor="#9E000000"
+                android:centerX="0.45" android:endColor="#2E000000" />
+            <corners android:radius="14dp" />
+        </shape>
+    </item>
+</layer-list>

@@ -34,6 +34,8 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
         title = getString(R.string.settings)
+        findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.settingsToolbar).setNavigationOnClickListener { finish() }
+        findViewById<TextView>(R.id.settingsVersionNumber).text = getString(R.string.version_text_field, BuildConfig.VERSION_NAME)
         settings = Settings(this)
         listUrl = findViewById(R.id.serviceListUrl)
         fallbacks = findViewById(R.id.fallbackUrls)

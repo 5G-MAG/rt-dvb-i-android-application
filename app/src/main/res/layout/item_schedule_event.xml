@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Jordi J. Gimenez (5G-MAG)
+Copyright: (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+-->
+<!-- One event: start time, title, duration and genre; the programme on now has the blue bar, the
+     elevated background, the LIVE badge and its progress. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/eventRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="12dp"
+    android:layout_marginTop="2dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginBottom="2dp"
+    android:background="@drawable/bg_schedule_event"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:minHeight="56dp"
+    android:orientation="horizontal">
+
+    <View
+        android:id="@+id/nowBar"
+        android:layout_width="4dp"
+        android:layout_height="match_parent"
+        android:background="@color/fivegmag_blue"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/eventTime"
+        android:layout_width="64dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:fontFamily="@font/ubuntu_medium"
+        android:paddingStart="12dp"
+        android:paddingTop="12dp"
+        android:textColor="@color/on_surface_primary"
+        android:textSize="14sp"
+        tools:text="11:30" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingTop="10dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/eventTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="@color/on_surface_primary"
+                android:textSize="15sp"
+                tools:text="Inside the Reference Tools" />
+
+            <TextView
+                android:id="@+id/eventBadge"
+                style="@style/MediaTypeBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_badge_featured"
+                android:text="@string/badge_live"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/eventMeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/on_surface_secondary"
+            android:textSize="12sp"
+            tools:text="45 min · Documentary" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/eventProgress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:importantForAccessibility="no"
+            android:visibility="gone"
+            app:indicatorColor="@color/fivegmag_blue"
+            app:trackColor="@color/divider_dark"
+            app:trackThickness="2dp" />
+    </LinearLayout>
+</LinearLayout>

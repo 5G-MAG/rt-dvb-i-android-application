@@ -26,4 +26,8 @@ Derived from rt-5gms-application fivegmag_5GMSdAwareApplication (5G-MAGflix) res
         android:id="@+id/action_reload"
         android:title="@string/reload"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_about"
+        android:title="@string/action_about"
+        app:showAsAction="never" />
 </menu>

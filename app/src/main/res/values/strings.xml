@@ -7,12 +7,10 @@
     <string name="logo_text_dvbi">\u0020for DVB-I</string>
     <string name="no_service_list">No service list loaded</string>
     <string name="badge_5g">5G Broadcast</string>
-    <string name="badge_5g_short">5G</string>
     <string name="service_not_found">This service is not in the installed service list.</string>
     <string name="no_playable_instance">No service instance of this service can be played on this device.</string>
     <string name="channel_number_hint">Channel number</string>
     <string name="go">Go</string>
-    <string name="logo">Service logo</string>
     <string name="schedule">Schedule</string>
     <string name="reload">Reload</string>
     <string name="settings">Settings</string>
@@ -33,7 +31,6 @@
 
     <!-- Home -->
     <string name="badge_live">Live</string>
-    <string name="badge_on_demand">On-demand</string>
     <string name="next_line">Next %1$s \u00b7 %2$s</string>
     <string name="hero_description">Featured: %s</string>
     <string name="now_label">Now: %s</string>
@@ -65,4 +62,56 @@
     <!-- Player -->
     <string name="back">Back</string>
     <string name="instance_heading">Service instance</string>
+
+    <!-- Schedule -->
+    <string name="today">Today, %s</string>
+    <string name="tomorrow">Tomorrow, %s</string>
+    <string name="yesterday">Yesterday, %s</string>
+    <string name="minutes">%d min</string>
+    <string name="on_air_now">on air now</string>
+    <string name="synopsis">Synopsis</string>
+    <string name="programme_fallback">(Programme information request failed; shown from the schedule.)</string>
+
+    <!-- Settings -->
+    <string name="settings_list_heading">Service list</string>
+    <string name="settings_list_description">The DVB-I service list to install. Pick one from a Service List Registry below, or enter its URL.</string>
+    <string name="settings_registry_heading">Service List Registry</string>
+    <string name="settings_registry_description">Ask a Service List Registry which service lists exist, for a country if one is given.</string>
+    <string name="settings_region_heading">Region and packages</string>
+    <string name="settings_region_description">Your region chooses the channel numbers and the regional services; subscription packages choose the services you are associated with.</string>
+    <string name="settings_parental_heading">Parental control</string>
+    <string name="version_text_field">Version: %s</string>
+
+    <!-- About, after 5G-MAGflix's -->
+    <string name="action_about">About</string>
+    <string name="action_license">5G-MAG Public License</string>
+    <string name="action_attribution_notice">Open-source licences</string>
+    <string name="headline">5G-MAG Reference Tools</string>
+    <string name="reference_tools">Reference Tools</string>
+    <string name="project">Project</string>
+    <string name="description">Description</string>
+    <string name="contact">Contact</string>
+    <string name="authors">Authors</string>
+    <string name="credits">Credits</string>
+    <string name="licences">Licences</string>
+    <string name="icons">Icons</string>
+    <string name="icons_description">What the badges on the channel cards and in the player mean. Tap or long-press a badge to see what it says for that service.</string>
+    <string name="description_text">A native Android DVB-I client: it discovers a service list, from a URL or a Service List Registry, presents its channels with their content guide, and plays them with Media3 ExoPlayer, per ETSI TS 103 770 V1.2.1.</string>
+    <string name="credits_text">The user interface is based on the design of 5G-MAGflix, the 5GMSd Aware Application in 5G-MAG/rt-5gms-application, by Daniel Silhavy (Fraunhofer FOKUS).</string>
+    <string name="credits_link_label">5G-MAGflix in 5G-MAG/rt-5gms-application</string>
+    <string name="fivegmagflix_url">https://github.com/5G-MAG/rt-5gms-application</string>
+    <string name="github_label">GitHub</string>
+    <string name="github_url">https://github.com/5G-MAG/rt-dvb-i-android-application</string>
+    <string name="project_page_label">DVB-I Services over 5G Systems</string>
+    <string name="project_page_url">https://www.5g-mag.com/reference-tools/dvb-i</string>
+    <string name="linked_in_label">LinkedIn</string>
+    <string name="linked_in_url">https://www.linkedin.com/company/5g-mag/</string>
+    <string name="slack_label">Slack</string>
+    <!-- The invite of the 5G-MAG website (src/data/socialLinks.js), which replaced 5G-MAGflix's. -->
+    <string name="slack_url">https://join.slack.com/t/5g-mag/shared_invite/zt-44la3q72s-Mrb13bWpHA33GiCbWJ6C3Q</string>
+    <string name="website_label">Website</string>
+    <string name="website_url">https://www.5g-mag.com/</string>
+    <string name="contributors_label">Contributors</string>
+    <string name="authors_url">https://github.com/5G-MAG/rt-dvb-i-android-application/graphs/contributors</string>
+    <string name="open_source_intro">This app is built with these open-source components. Tap one to open its project.</string>
 </resources>

@@ -153,6 +153,31 @@ object ServiceBadges {
         return out
     }
 
+    /** Every badge with what it means in general, for the legend of the About screen. */
+    fun legend(): List<Badge> = listOf(
+        Badge(Badge.Kind.AGE, null, "12+", R.color.badge_age, "Minimum parental age rating of the service (ParentalRating, clause 5.5.28)"),
+        Badge(Badge.Kind.PROGRAMME_AGE, null, "16+", R.color.badge_age, "Minimum age rating of the programme on now, from the content guide (clause 6.10.15); it takes precedence over the service's"),
+        Badge(Badge.Kind.RESTRICTED, R.drawable.ic_lock, null, R.color.badge_off, "Restricted by your parental setting"),
+        Badge(Badge.Kind.FIVE_G, R.drawable.ic_cell_tower, null, R.color.badge_5g_ok, "5G Broadcast instance (an mbms:// locator, clause 9.3.3)"),
+        Badge(Badge.Kind.FIVE_G_BAD, R.drawable.ic_cell_tower, null, R.color.badge_5g_bad, "5G Broadcast signalling is wrong: the locator is not a valid MBMS URL (3GPP TS 26.347 clause 8.2.2)"),
+        Badge(Badge.Kind.AUDIO_DESCRIPTION, R.drawable.ic_audio_description, null, R.color.badge_access, "Audio description (clause 4.5.2.4)"),
+        Badge(Badge.Kind.SUBTITLES, R.drawable.ic_subtitles, null, R.color.badge_subtitles, "Subtitles, with their language, purpose and carriage (clause 4.5.2.3)"),
+        Badge(Badge.Kind.HARD_OF_HEARING, R.drawable.ic_hearing, null, R.color.badge_subtitles, "Subtitles for the hard of hearing (SubtitlePurposeCS)"),
+        Badge(Badge.Kind.SIGNING, R.drawable.ic_sign_language, null, R.color.badge_access, "In-vision sign language (clause 4.5.2.2)"),
+        Badge(Badge.Kind.DIALOGUE_ENHANCEMENT, R.drawable.ic_graphic_eq, null, R.color.badge_access, "Dialogue enhancement (clause 4.5.2.5)"),
+        Badge(Badge.Kind.SPOKEN_SUBTITLES, R.drawable.ic_record_voice_over, null, R.color.badge_access, "Spoken subtitles (clause 4.5.2.6)"),
+        Badge(Badge.Kind.DASH, null, "DASH", R.color.badge_neutral, "Delivered with MPEG-DASH"),
+        Badge(Badge.Kind.HLS, null, "HLS", R.color.badge_neutral, "Delivered with HLS (annex G)"),
+        Badge(Badge.Kind.BROADCAST_ONLY, R.drawable.ic_settings_input_antenna, null, R.color.badge_delivery, "Broadcast delivery only (DVB-T/S/C or 5G Broadcast): no stream this client can receive is listed"),
+        Badge(Badge.Kind.MULTICAST_ONLY, R.drawable.ic_lan, null, R.color.badge_delivery, "Multicast delivery only: not receivable by this client"),
+        Badge(Badge.Kind.SUBSCRIPTION, null, "SUB", R.color.badge_age, "Instances in subscription packages (table 16)"),
+        Badge(Badge.Kind.CONDITIONAL_ACCESS, null, "CA", R.color.badge_age, "Conditional access systems (clause 5.5.20)"),
+        Badge(Badge.Kind.DRM, R.drawable.ic_key, null, R.color.badge_age, "Content protection with DRM systems (clause 5.5.20)"),
+        Badge(Badge.Kind.REGION, R.drawable.ic_location_on, null, R.color.badge_neutral, "Restricted to target regions (TargetRegion, table 15)"),
+        Badge(Badge.Kind.OFF_AIR, R.drawable.ic_tv_off, null, R.color.badge_off, "Off-air: no instance is within its scheduled service hours (clause 5.2.5.2)"),
+        Badge(Badge.Kind.GUIDE, R.drawable.ic_event_note, null, R.color.badge_neutral, "Content guide available (clause 6)"),
+    )
+
     private fun languages(list: List<String>): String {
         val l = list.filter { it.isNotEmpty() }.distinct()
         return if (l.isEmpty()) "" else " (" + l.joinToString(", ") + ")"

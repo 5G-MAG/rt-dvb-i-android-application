@@ -132,6 +132,7 @@ class MainActivity : AppCompatActivity() {
         R.id.action_reload -> { load(); true }
         R.id.action_settings -> { openSettings(); true }
         R.id.action_channel_number -> { askChannelNumber(); true }
+        R.id.action_about -> { startActivity(Intent(this, AboutActivity::class.java)); true }
         else -> false
     }
 
