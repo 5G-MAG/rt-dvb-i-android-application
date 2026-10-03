@@ -11,6 +11,7 @@ package com.fivegmag.dvbiclient
 
 import android.app.Application
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import com.fivegmag.dvbiclient.mbms.IMbmsStreamingClient
 import coil.ImageLoader
 import coil.ImageLoaderFactory
@@ -24,6 +25,8 @@ class App : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
+        // The user interface is dark only, as 5G-MAGflix's.
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         // The MBMS Client comes from the build variant's role (src/<flavor>/.../Role.kt).
         DvbiSession.mbmsClient = Role.mbmsClient()
         Log.i(TAG_APP, "${Role.NAME}: ${Role.status()}")

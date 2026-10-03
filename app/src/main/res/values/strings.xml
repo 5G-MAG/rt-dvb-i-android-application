@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">DVB-I Client</string>
+    <!-- The launcher label; the full name is app_full_name. -->
+    <string name="app_name">5G-MAGflix DVB-I</string>
+    <string name="app_full_name">5G-MAGflix for DVB-I</string>
     <string name="no_service_list">No service list loaded</string>
     <string name="badge_5g">5G Broadcast</string>
     <string name="badge_5g_short">5G</string>

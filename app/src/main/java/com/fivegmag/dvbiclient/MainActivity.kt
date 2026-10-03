@@ -19,6 +19,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.fivegmag.dvbiclient.guide.GuideEvent
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     private var numbering: Map<String, ServiceListRules.Numbering> = emptyMap()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         settings = Settings(this)

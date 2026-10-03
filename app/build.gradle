@@ -72,6 +72,9 @@ dependencies {
     implementation 'com.google.android.material:material:1.13.0'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
 
+    // Splash screen (compat for pre-Android 12), as in 5G-MAGflix
+    implementation 'androidx.core:core-splashscreen:1.2.0'
+
     // Image loading (service logos)
     implementation 'io.coil-kt:coil:2.7.0'
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
