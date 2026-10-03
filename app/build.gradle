@@ -24,6 +24,27 @@ android {
         buildConfig = true
     }
 
+    // The DVB-I client in its three roles. Each flavor's src/<flavor>/ holds its Role object, which
+    // supplies the MBMS Client; the role's adapter module is a dependency of that flavor only.
+    flavorDimensions = ['role']
+    productFlavors {
+        // Plain DVB-I, the default.
+        dvbi {
+            dimension = 'role'
+            isDefault = true
+        }
+        // The DVB-I client acting as MBMS-Aware Application, ETSI TS 103 770 V1.2.1 clause 9.3.3.
+        dvbiMbms {
+            dimension = 'role'
+            applicationIdSuffix = '.mbms'
+        }
+        // The DVB-I client acting as 5GMSd-Aware Application.
+        dvbi5gms {
+            dimension = 'role'
+            applicationIdSuffix = '.fivegms'
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -38,6 +59,8 @@ android {
 
 dependencies {
     implementation project(':dvbi-core')
+    dvbiMbmsImplementation project(':adapter-mbms')
+    dvbi5gmsImplementation project(':adapter-5gms')
 
     implementation 'androidx.media3:media3-exoplayer:1.10.0'
     implementation 'androidx.media3:media3-exoplayer-dash:1.10.0'

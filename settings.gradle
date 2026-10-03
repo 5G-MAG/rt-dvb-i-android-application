@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 rootProject.name = "DVB-I Client"
 include ':app'
 include ':dvbi-core'
+include ':adapter-mbms'
+include ':adapter-5gms'

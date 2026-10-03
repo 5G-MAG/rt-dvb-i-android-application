@@ -24,6 +24,9 @@ class App : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
+        // The MBMS Client comes from the build variant's role (src/<flavor>/.../Role.kt).
+        DvbiSession.mbmsClient = Role.mbmsClient()
+        Log.i(TAG_APP, "${Role.NAME}: ${Role.status()}")
         // TS 103 770 V1.2.1 clause 9.3.3: the DVB-I client acts as an MBMS-Aware Application. The
         // registration result says whether 5G Broadcast instances can be received.
         DvbiSession.mbmsClient.registerStreamingApp(

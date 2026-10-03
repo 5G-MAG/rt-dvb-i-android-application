@@ -1,0 +1,24 @@
+// The MBMS Client of the 5G-MAG MBMS Middleware for Android behind dvbi-core's MBMS Client
+// interface. Not implemented yet; see README.md. dvbi-core is an api dependency because the
+// adapter's public type is dvbi-core's interface.
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.fivegmag.dvbiclient.adapter.mbms'
+    compileSdk 37
+
+    defaultConfig {
+        minSdk 29
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    api project(':dvbi-core')
+}

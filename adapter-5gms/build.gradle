@@ -1,0 +1,23 @@
+// The 5GMSd Client reached through the 5G-MAG 5GMS client libraries. Not implemented yet; see
+// README.md.
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.fivegmag.dvbiclient.adapter.fivegms'
+    compileSdk 37
+
+    defaultConfig {
+        minSdk 29
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation project(':dvbi-core')
+}

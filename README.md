@@ -53,14 +53,18 @@ This repository started as the folder `fivegmag_DVBIClient` of rt-5gms-applicati
 | Module | What it holds |
 | --- | --- |
 | `dvbi-core/` | An Android library with the DVB-I logic and no user interface: service list parsing, channel numbering (LCN), instance selection, the HTTP rules of clause 4.3, content guide requests and parsing, registry discovery, the `mbms://` URL check, and the MBMS Client interface with its `NoMbmsClient` default. No Activities, no Media3. |
-| `app/` | The DVB-I client built on `dvbi-core`: channel list, player (Media3 ExoPlayer), settings, schedule, and the HTTP transport (OkHttp). |
+| `app/` | The DVB-I client built on `dvbi-core`: channel list, player (Media3 ExoPlayer), settings, schedule, and the HTTP transport (OkHttp). Three variants, one per role: `dvbi` (plain DVB-I, the default), `dvbiMbms` (acting as MBMS-Aware Application) and `dvbi5gms` (acting as 5GMSd-Aware Application). |
+| `adapter-mbms/` | The MBMS Client of [rt-mbms-mw-android](https://github.com/5G-MAG/rt-mbms-mw-android) behind the MBMS Client interface, for `dvbiMbms`. Not implemented yet. |
+| `adapter-5gms/` | The 5GMSd Client through the 5G-MAG 5GMS client libraries, for `dvbi5gms`. Not implemented yet. |
+| `docs/` | [`architecture.md`](docs/architecture.md): the roles, the principles, and what is open. |
 
 The Kotlin packages are those of the single-module project (`com.fivegmag.dvbiclient.*`); the
 library's Android namespace, `com.fivegmag.dvbiclient.core`, is new. It names the library's generated
 build classes and changes no Kotlin package.
 
-`dvbi-core` is what a different front end reuses. 5G additions plug in here rather than living on
-branches; see [5G Broadcast and the MBMS Client](#5g-broadcast-and-the-mbms-client) and
+`dvbi-core` is what a different front end reuses. 5G additions plug in as a variant and an adapter
+rather than living on branches. Until the adapters are implemented, `dvbiMbms` and `dvbi5gms` behave
+as `dvbi`. See [5G Broadcast and the MBMS Client](#5g-broadcast-and-the-mbms-client) and
 [5G Media Streaming](#5g-media-streaming).
 
 ### What it does
@@ -146,8 +150,18 @@ With `JAVA_HOME` and `ANDROID_HOME` set as above:
 ```sh
 cd rt-dvb-i-android-application/
 ./gradlew test             # JVM unit tests
-./gradlew assembleDebug    # app/build/outputs/apk/debug/app-debug.apk
+./gradlew assembleDvbiDebug    # app/build/outputs/apk/dvbi/debug/app-dvbi-debug.apk
 ```
+
+Each variant has its own task and APK; `./gradlew assembleDebug` builds all three:
+
+| Variant | Task | APK | Application ID |
+| --- | --- | --- | --- |
+| `dvbi` | `assembleDvbiDebug` | `app/build/outputs/apk/dvbi/debug/app-dvbi-debug.apk` | `com.fivegmag.dvbiclient` |
+| `dvbiMbms` | `assembleDvbiMbmsDebug` | `app/build/outputs/apk/dvbiMbms/debug/app-dvbiMbms-debug.apk` | `com.fivegmag.dvbiclient.mbms` |
+| `dvbi5gms` | `assembleDvbi5gmsDebug` | `app/build/outputs/apk/dvbi5gms/debug/app-dvbi5gms-debug.apk` | `com.fivegmag.dvbiclient.fivegms` |
+
+The application IDs differ, so the variants can be installed side by side.
 
 ## Installing
 
@@ -155,10 +169,10 @@ Over adb, with the phone connected by USB and USB debugging enabled:
 
 ```sh
 adb devices
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb install -r app/build/outputs/apk/dvbi/debug/app-dvbi-debug.apk
 ```
 
-Without adb, copy `app-debug.apk` to the phone (for example by download or file transfer) and open it there,
+Without adb, copy `app-dvbi-debug.apk` to the phone (for example by download or file transfer) and open it there,
 allowing the installation of applications from that source when Android asks.
 
 ## Running
@@ -224,8 +238,11 @@ names of the annex B.3 IDL) this client calls: `registerStreamingApp`, `getStrea
 `registerStreamingResponse`, `serviceStarted`, `streamingServiceError` and `streamingServiceListUpdate`. The
 client registers with the service class of TS 103 770 table 106, `urn:dvb:metadata:serviceClass:DVB-I_Service_Instance:1`.
 `NoMbmsClient` refuses the registration, so 5G Broadcast instances are discarded and another instance plays.
-An Android MBMS Client implements the interface and is set in `DvbiSession.mbmsClient`; the player then starts
-the User Service whose `serviceId` is the locator's prefix and plays its `ManifestURI`.
+An Android MBMS Client implements the interface and is installed in `DvbiSession.mbmsClient` by the variant's
+`Role` (`app/src/<variant>/`); the player then starts the User Service whose `serviceId` is the locator's
+prefix and plays its `ManifestURI`. In the `dvbiMbms` variant that client is `adapter-mbms`, which answers as
+`NoMbmsClient` for now: the MBMS Middleware's MwService does not yet offer an interface to bind to (see
+[adapter-mbms/README.md](adapter-mbms/README.md)).
 
 `DvbiSession` and the activities are in `app`; the interface, `NoMbmsClient`, the locator check and the
 choice of entry point (`MbmsReception`) are in `dvbi-core`, so an MBMS Client is supplied without
@@ -233,8 +250,10 @@ changing either module's DVB-I logic.
 
 ## 5G Media Streaming
 
-Nothing for 5G Media Streaming (5GMS) is built here. A 5GMS front end would be another application
-that depends on `dvbi-core` for the DVB-I logic and brings its own 5GMS client, for example
+The `dvbi5gms` variant is where the DVB-I client acts as 5GMSd-Aware Application, through
+`adapter-5gms`. Nothing for 5G Media Streaming (5GMS) is implemented yet (see
+[adapter-5gms/README.md](adapter-5gms/README.md)). Another 5GMS front end can also depend on `dvbi-core`
+for the DVB-I logic and bring its own 5GMS client, for example
 [rt-5gms-application](https://github.com/5G-MAG/rt-5gms-application).
 
 5GMS Service Access Information has no element in a DVB-I service list or playlist. ETSI TR 103 972
