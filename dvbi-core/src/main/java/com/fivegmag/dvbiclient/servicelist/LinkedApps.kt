@@ -9,6 +9,8 @@ https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
 
 package com.fivegmag.dvbiclient.servicelist
 
+import com.fivegmag.dvbiclient.guide.GuideRequests
+
 /**
  * A linked application (ETSI TS 103 770 V1.2.1 clause 5.2.3.1): the LinkedApplicationCS:2019 term
  * of its HowRelated@href ("1.1", "1.2", "2", "3"), its MediaUri and MediaUri@contentType.
@@ -41,6 +43,47 @@ object LinkedApps {
      * webpage. This client starts HTML pages, and an XML AIT that leads to one.
      */
     val STARTABLE_TYPES = setOf("text/html", "application/xhtml+xml", "application/vnd.dvb.ait+xml")
+
+    /**
+     * Where a linked application is launched from, with the launch location a home page (term 3)
+     * gets there. Clause 5.2.3.1: "if the application is launched from a DVB-I content guide then
+     * "epg" shall be used, otherwise if the application is launched from a UI showing a list of
+     * DVB-I services (without guide data) then "channellist" shall be used, otherwise the most
+     * appropriate value of the "Defined launch location terms" from that clause shall be used."
+     */
+    enum class LaunchView(val homePageLocation: String) {
+        CONTENT_GUIDE("epg"),
+        SERVICE_LIST("channellist"),
+
+        /**
+         * The player. It is neither a content guide nor a list of services, nor "within the
+         * terminal's electronic programme guide", which the miniguide row of ETSI TS 102 796 V1.8.1
+         * clause 6.2.2.6.2, table 2a requires, even where it shows the service's now and next. So
+         * the row that applies is: "Any view that does not fall within the categories defined
+         * above and for which no platform-specific or local term is defined.", other.
+         */
+        PLAYER("other"),
+    }
+
+    /**
+     * The launch location of clause 5.2.3.1: "service" for 1.2, "availability" for 2 (both
+     * "should"), none for 1.1 ("the launch location is not used"), and for 3 the one of [view].
+     */
+    fun launchLocation(term: String, view: LaunchView): String = when (term) {
+        CONTROLLING -> "service"
+        OUTSIDE_AVAILABILITY -> "availability"
+        HOME_PAGE -> view.homePageLocation
+        else -> ""
+    }
+
+    /**
+     * The URL to open for a linked application whose MediaUri is an HTML page: the page with the
+     * launch location added. ETSI TS 102 796 V1.8.1 clause 6.2.2.6.2: "the application URL (which
+     * may refer to either an HTML page or an XML AIT) is modified to add a launch context query
+     * parameter of the form "lloc=<launch location>"."
+     */
+    fun pageUrl(url: String, term: String, view: LaunchView): String =
+        GuideRequests.withLaunchLocation(url, launchLocation(term, view))
 
     fun startableType(contentType: String): Boolean = contentType.trim().lowercase() in STARTABLE_TYPES
 

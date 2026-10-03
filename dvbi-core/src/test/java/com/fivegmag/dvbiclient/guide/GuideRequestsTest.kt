@@ -74,5 +74,23 @@ class GuideRequestsTest {
         assertEquals("https://channel7.co.uk/ait.aitx?pid=b01myjsy&regionID%5B%5D=Piemonte&lloc=epg",
             GuideRequests.aitUrl("https://channel7.co.uk/ait.aitx?pid=b01myjsy", listOf("Piemonte"), "epg"))
         assertEquals("https://channel7.co.uk/ait.aitx?lloc=epg", GuideRequests.aitUrl("https://channel7.co.uk/ait.aitx", emptyList(), "epg"))
+        assertEquals("before the first number sign", "https://channel7.co.uk/ait.aitx?pid=1&regionID%5B%5D=R&lloc=epg#x",
+            GuideRequests.aitUrl("https://channel7.co.uk/ait.aitx?pid=1#x", listOf("R"), "epg"))
+    }
+
+    @Test
+    fun ts102796Clause6_2_2_6_2LaunchLocationBeforeTheFirstNumberSign() {
+        assertEquals("example 1", "http://www.example.com/hbbtv-application?lloc=playerpage",
+            GuideRequests.withLaunchLocation("http://www.example.com/hbbtv-application", "playerpage"))
+        assertEquals("example 3", "http://www.example.com/deeplink?cid=is38g7bv&lloc=epg",
+            GuideRequests.withLaunchLocation("http://www.example.com/deeplink?cid=is38g7bv", "epg"))
+        assertEquals("example 4", "http://www.example.com/hbbtv-application?lloc=playerpage#mode4",
+            GuideRequests.withLaunchLocation("http://www.example.com/hbbtv-application#mode4", "playerpage"))
+        assertEquals("a ? inside the fragment does not start a query (RFC 3986 clause 3.4)", "https://a.example/p?lloc=other#a?b",
+            GuideRequests.withLaunchLocation("https://a.example/p#a?b", "other"))
+        assertEquals("the first number sign", "https://a.example/p?q=1&lloc=epg#a#b",
+            GuideRequests.withLaunchLocation("https://a.example/p?q=1#a#b", "epg"))
+        assertEquals("no launch location, no change", "https://a.example/p#f", GuideRequests.withLaunchLocation("https://a.example/p#f", ""))
+        assertEquals("other queries the same way", "https://cg.example/program?pid=p#f", GuideRequests.programUrl("https://cg.example/program#f", "p"))
     }
 }

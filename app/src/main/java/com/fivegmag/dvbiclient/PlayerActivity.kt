@@ -416,7 +416,8 @@ class PlayerActivity : AppCompatActivity() {
     private fun startControllingApplication(exo: ExoPlayer, d: Delivery.ControllingApplication) {
         exo.stop()
         val regions = OnDemand.regions(settings)
-        DvbiRepository.background({ LinkedApplication.resolve(d.url, d.contentType, LinkedApps.CONTROLLING, regions) }) { url ->
+        // Term 1.2 has the launch location "service" wherever it is launched from.
+        DvbiRepository.background({ LinkedApplication.resolve(d.url, d.contentType, LinkedApps.CONTROLLING, LinkedApps.LaunchView.PLAYER, regions) }) { url ->
             if (isFinishing || isDestroyed) return@background
             if (url == null) {
                 onInstanceFailed(null)
@@ -466,7 +467,7 @@ class PlayerActivity : AppCompatActivity() {
         button.visibility = View.GONE
         if (app == null) return
         val regions = OnDemand.regions(settings)
-        DvbiRepository.background({ LinkedApplication.resolve(app.url, app.contentType, app.term, regions) }) { url ->
+        DvbiRepository.background({ LinkedApplication.resolve(app.url, app.contentType, app.term, LinkedApps.LaunchView.PLAYER, regions) }) { url ->
             if (isFinishing || isDestroyed) return@background
             button.visibility = View.VISIBLE
             button.isEnabled = url != null

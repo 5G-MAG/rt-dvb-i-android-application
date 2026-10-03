@@ -50,10 +50,25 @@ object GuideRequests {
         pairs.filter { !it.second.isNullOrEmpty() }
             .joinToString("&") { "${encodeQueryComponent(it.first)}=${encodeQueryComponent(it.second!!)}" }
 
+    /**
+     * [base] with [pairs] added to its query. IETF RFC 3986 clause 3.4: "The query component is
+     * indicated by the first question mark ("?") character and terminated by a number sign ("#")
+     * character or by the end of the URI." So the pairs go before the first "#", as ETSI TS 102 796
+     * V1.8.1 clause 6.2.2.6.2 has it for lloc: "This string is added before the first number sign
+     * (#) character in the URL if there is one, or at the end if there is not, using either a "?" or
+     * a "&" character in order to maintain a legal URL structure as defined in IETF RFC 3986 [27]."
+     */
     fun withQuery(base: String, pairs: List<Pair<String, String?>>): String {
         val q = query(pairs)
-        return if (q.isEmpty()) base else base + (if (base.contains('?')) "&" else "?") + q
+        if (q.isEmpty()) return base
+        val hash = base.indexOf('#')
+        val head = if (hash < 0) base else base.substring(0, hash)
+        val fragment = if (hash < 0) "" else base.substring(hash)
+        return head + (if (head.contains('?')) "&" else "?") + q + fragment
     }
+
+    /** [url] with the launch context parameter "lloc=<launch location>" of TS 102 796 clause 6.2.2.6.2; unchanged when [launchLocation] is empty. */
+    fun withLaunchLocation(url: String, launchLocation: String): String = withQuery(url, listOf("lloc" to launchLocation))
 
     /**
      * The 12-hour windows, each starting on a 3-hour boundary, that together cover [fromMs, toMs]

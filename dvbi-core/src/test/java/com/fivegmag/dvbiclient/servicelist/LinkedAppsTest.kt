@@ -24,6 +24,20 @@ class LinkedAppsTest {
     private val caps = Instances.Capabilities()
 
     @Test
+    fun clause5_2_3_1LaunchLocationOfEachTermOnAnHtmlPage() {
+        val v = LinkedApps.LaunchView.PLAYER
+        assertEquals("1.2: service", "https://a.example/app.html?lloc=service", LinkedApps.pageUrl("https://a.example/app.html", LinkedApps.CONTROLLING, v))
+        assertEquals("2: availability", "https://a.example/app.html?x=1&lloc=availability#top",
+            LinkedApps.pageUrl("https://a.example/app.html?x=1#top", LinkedApps.OUTSIDE_AVAILABILITY, v))
+        assertEquals("1.1: the launch location is not used", "https://a.example/app.html", LinkedApps.pageUrl("https://a.example/app.html", LinkedApps.WITH_MEDIA, v))
+        assertEquals("3 from a content guide: epg", "epg", LinkedApps.launchLocation(LinkedApps.HOME_PAGE, LinkedApps.LaunchView.CONTENT_GUIDE))
+        assertEquals("3 from a list of services: channellist", "channellist", LinkedApps.launchLocation(LinkedApps.HOME_PAGE, LinkedApps.LaunchView.SERVICE_LIST))
+        assertEquals("3 from the player, a view table 2a has no term for: other", "https://a.example/home?lloc=other",
+            LinkedApps.pageUrl("https://a.example/home", LinkedApps.HOME_PAGE, LinkedApps.LaunchView.PLAYER))
+        assertEquals("1.2 wherever it is launched from", "service", LinkedApps.launchLocation(LinkedApps.CONTROLLING, LinkedApps.LaunchView.SERVICE_LIST))
+    }
+
+    @Test
     fun clause5_2_3_4InstanceLevelApplicationsOverrideServiceLevelOnesOfTheSameType() {
         assertEquals("1.2", LinkedApps.term(LinkedApps.CS + "1.2"))
         assertNull(LinkedApps.term("urn:other:1.2"))

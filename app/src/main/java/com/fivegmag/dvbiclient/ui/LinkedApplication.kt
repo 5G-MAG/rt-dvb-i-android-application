@@ -25,22 +25,19 @@ import com.fivegmag.dvbiclient.servicelist.ServiceInstance
 object LinkedApplication {
 
     /**
-     * The launch location of clause 5.2.3.1: "service" for 1.2, "availability" for 2, none for 1.1
-     * ("the launch location is not used"), and for 3 "channellist", the player being reached from
-     * the list of services.
+     * Blocking: the URL to open for an application, or null when there is no application this
+     * client can start. The launch location of [term] launched from [view] (clause 5.2.3.1) goes on
+     * the application URL, "which may refer to either an HTML page or an XML AIT" (ETSI TS 102 796
+     * V1.8.1 clause 6.2.2.6.2): on the page itself, or on the XML AIT request with the other
+     * contextual parameters of clause 5.2.4.4.6.
      */
-    fun launchLocation(term: String): String = when (term) {
-        LinkedApps.CONTROLLING -> "service"
-        LinkedApps.OUTSIDE_AVAILABILITY -> "availability"
-        LinkedApps.HOME_PAGE -> "channellist"
-        else -> ""
-    }
-
-    /** Blocking: the URL to open for [app], or null when there is no application this client can start. */
-    fun resolve(url: String, contentType: String, term: String, regions: List<String>): String? {
+    fun resolve(url: String, contentType: String, term: String, view: LinkedApps.LaunchView, regions: List<String>): String? {
         val type = contentType.trim().lowercase()
-        if (type != XmlAit.CONTENT_TYPE) return url.takeIf { LinkedApps.startableType(type) && AppActivity.isWebUrl(it) }
-        val apps = DvbiRepository.guide.ait(url, regions, launchLocation(term)).value ?: return null
+        val lloc = LinkedApps.launchLocation(term, view)
+        if (type != XmlAit.CONTENT_TYPE) {
+            return url.takeIf { LinkedApps.startableType(type) && AppActivity.isWebUrl(it) }?.let { LinkedApps.pageUrl(it, term, view) }
+        }
+        val apps = DvbiRepository.guide.ait(url, regions, lloc).value ?: return null
         return XmlAit.select(apps)?.url?.takeIf { AppActivity.isWebUrl(it) }
     }
 
