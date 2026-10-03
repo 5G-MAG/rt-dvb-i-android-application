@@ -15,7 +15,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.fivegmag.dvbiclient.mbms.IMbmsStreamingClient
 import coil.ImageLoader
 import coil.ImageLoaderFactory
-import okhttp3.OkHttpClient
+import com.fivegmag.dvbiclient.http.OkHttpTransport
 
 /**
  * Application class. Configures the Coil [ImageLoader] used for service logos with a descriptive
@@ -49,7 +49,9 @@ class App : Application(), ImageLoaderFactory {
     }
 
     override fun newImageLoader(): ImageLoader {
-        val client = OkHttpClient.Builder()
+        // Images come from service list and content guide servers (ETSI TS 103 770 clause 5.2.8), so
+        // the same TLS profile applies (clause 7.3).
+        val client = OkHttpTransport.clientBuilder()
             .addInterceptor { chain ->
                 chain.proceed(
                     chain.request().newBuilder()
