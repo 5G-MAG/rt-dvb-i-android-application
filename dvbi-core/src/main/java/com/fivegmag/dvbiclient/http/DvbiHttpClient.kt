@@ -60,6 +60,14 @@ data class HttpResult(
  * - 4.3.2.1 also has the client follow clause 7.3.2.6 of ETSI TS 102 796, which adds the
  *   If-None-Match header "where a server provides an ETag header": the ETag held for that
  *   document is sent as If-None-Match, and omitted when none is held.
+ * - The same clause 7.3.2.6: "Terminals shall observe the caching rules defined in HTTP/1.1 [6]",
+ *   [6] being IETF RFC 7230, whose clause 2.4 reads "HTTP requirements for cache behavior and
+ *   cacheable responses are defined in Section 2 of [RFC7234]." So, by IETF RFC 7234: a response
+ *   with no-store is not stored (clause 5.2.2.3); one with no-cache is held for its validators
+ *   only and never reused without validation (clause 5.2.2.2); a response is reused only while
+ *   fresh, its freshness lifetime being max-age, else Expires minus Date (clause 4.2.1), against
+ *   its current age from Age and Date (clause 4.2.3); a 304 replaces the stored header fields it
+ *   carries (clause 4.3.4).
  * - 4.3.3.2: after 400 or 406 the same request is not sent again.
  * - 4.3.3.3: after 401 or 403 the request is not sent again before the Retry-After period. How to
  *   re-authenticate is outside the scope of the clause, and this client has no credentials.
@@ -83,6 +91,8 @@ class DvbiHttpClient(
         var lastModified: String?,
         var etag: String?,
         var expiresAt: Long,
+        var cacheControl: String?,
+        var expires: String?,
     )
 
     private class State(var final: Boolean = false, var notBefore: Long = 0, var retry: Int = 0, var status: Int = 0)
@@ -108,6 +118,7 @@ class DvbiHttpClient(
         cached?.lastModified?.let { headers["If-Modified-Since"] = it }
         cached?.etag?.let { headers["If-None-Match"] = it }
 
+        val requestTime = now()
         val res = try {
             transport.get(url, headers)
         } catch (e: IOException) {
@@ -116,21 +127,36 @@ class DvbiHttpClient(
             return HttpResult(ok = false, status = 0, error = e.message ?: e.toString(), retryAt = backOff(key))
         }
 
+        val responseTime = now()
         val maxAge = maxAgeMs(res.header("Cache-Control"))
-        val expiresAt = if (maxAge != null) now() + maxAge else 0L
 
         if (res.status == 304 && cached != null) {
-            cached.expiresAt = expiresAt
+            // RFC 7234 clause 4.3.4: "use other header fields provided in the 304 (Not Modified)
+            // response to replace all instances of the corresponding header fields in the stored
+            // response".
+            res.header("Cache-Control")?.let { cached.cacheControl = it }
+            res.header("Expires")?.let { cached.expires = it }
             res.header("Last-Modified")?.let { cached.lastModified = it }
             res.header("ETag")?.let { cached.etag = it }
             state.remove(key)
+            if (noStore(cached.cacheControl)) cache.remove(url)
+            else cached.expiresAt = expiresAt(cached.cacheControl, cached.expires, res.header("Date"), res.header("Age"), requestTime, responseTime)
             return HttpResult(ok = true, status = 304, body = cached.body, contentType = cached.contentType, notModified = true,
                 maxAgeMs = maxAge, expires = res.header("Expires"))
         }
 
         val contentType = res.header("Content-Type") ?: ""
         if (res.status in 200..299) {
-            cache[url] = Cached(res.body, contentType, res.header("Last-Modified"), res.header("ETag"), expiresAt)
+            val cc = res.header("Cache-Control")
+            if (noStore(cc)) {
+                // RFC 7234 clause 5.2.2.3: "a cache MUST NOT store any part of either the immediate
+                // request or response", and makes "a best-effort attempt to remove the information
+                // from volatile storage", so an older copy goes too.
+                cache.remove(url)
+            } else {
+                cache[url] = Cached(res.body, contentType, res.header("Last-Modified"), res.header("ETag"),
+                    expiresAt(cc, res.header("Expires"), res.header("Date"), res.header("Age"), requestTime, responseTime), cc, res.header("Expires"))
+            }
             state.remove(key)
             return HttpResult(ok = true, status = res.status, body = res.body, contentType = contentType,
                 maxAgeMs = maxAge, expires = res.header("Expires"))
@@ -218,6 +244,60 @@ class DvbiHttpClient(
                 return seconds * 1000
             }
             return null
+        }
+
+        // The directive names of a Cache-Control value, lowercase (RFC 7234 clause 5.2: "Cache directives are identified by a token, to be compared case-insensitively").
+        private fun directives(cacheControl: String?): List<String> =
+            cacheControl?.split(',')?.map { it.trim().substringBefore('=').trim().lowercase() }?.filter { it.isNotEmpty() } ?: emptyList()
+
+        /** Whether the response carries no-store (RFC 7234 clause 5.2.2.3). */
+        fun noStore(cacheControl: String?): Boolean = "no-store" in directives(cacheControl)
+
+        private fun httpDate(v: String?): Long? = v?.trim()?.let {
+            try {
+                ZonedDateTime.parse(it, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant().toEpochMilli()
+            } catch (_: Exception) {
+                null
+            }
+        }
+
+        /**
+         * Until when (ms since the epoch) a response may be reused without validation; 0 when it may
+         * not be at all. RFC 7234:
+         * - clause 5.2.2.2, no-cache: "the response MUST NOT be used to satisfy a subsequent
+         *   request without successful validation on the origin server". The form naming header
+         *   fields "MAY use the response", so taking it as the plain form stays within the clause.
+         * - clause 4.2.1: the freshness lifetime is max-age if present, else "If the Expires
+         *   response header field (Section 5.3) is present, use its value minus the value of the
+         *   Date response header field"; with "more than one value present for a given directive
+         *   ... the directive's value is considered invalid", taken as stale, as the clause
+         *   encourages. No heuristic lifetime is used (clause 4.2.2 allows, does not require, one).
+         * - clause 5.3: "A cache recipient MUST interpret invalid date formats, especially the
+         *   value "0", as representing a time in the past (i.e., "already expired")."
+         * - clause 4.2.3: apparent_age = max(0, response_time - date_value); corrected_age_value =
+         *   age_value + response_delay; corrected_initial_age = max(apparent_age,
+         *   corrected_age_value); the response is fresh while freshness_lifetime > current_age,
+         *   current_age being corrected_initial_age plus the time since [responseTime].
+         */
+        fun expiresAt(cacheControl: String?, expires: String?, date: String?, age: String?, requestTime: Long, responseTime: Long): Long {
+            val d = directives(cacheControl)
+            if ("no-cache" in d) return 0L
+            val lifetime = when {
+                d.count { it == "max-age" } > 1 -> return 0L
+                "max-age" in d -> maxAgeMs(cacheControl) ?: return 0L
+                expires != null -> {
+                    val e = httpDate(expires) ?: return 0L
+                    val dv = httpDate(date) ?: responseTime
+                    e - dv
+                }
+                else -> return 0L
+            }
+            val dateValue = httpDate(date)
+            val apparentAge = if (dateValue != null) maxOf(0L, responseTime - dateValue) else 0L
+            val ageValue = age?.trim()?.takeIf { it.matches(Regex("^\\d+$")) }?.toBigInteger()
+                ?.min(2_147_483_648L.toBigInteger())?.toLong()?.times(1000) ?: 0L
+            val correctedInitialAge = maxOf(apparentAge, ageValue + (responseTime - requestTime))
+            return if (lifetime > correctedInitialAge) responseTime + lifetime - correctedInitialAge else 0L
         }
 
         /** Retry-After in milliseconds from [nowMs], or null. RFC 9110 clause 10.2.3: "Retry-After = HTTP-date / delay-seconds". */

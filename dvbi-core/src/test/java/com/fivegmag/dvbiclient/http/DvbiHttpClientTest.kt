@@ -125,6 +125,107 @@ class DvbiHttpClientTest {
         assertEquals(3, f.calls.size)
     }
 
+    private fun date(ms: Long) = DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.ofInstant(java.time.Instant.ofEpochMilli(ms), java.time.ZoneOffset.UTC))
+
+    @Test
+    fun rfc7234Clause5_2_2_3NoStoreIsNotStored() {
+        val t = Clock()
+        val f = FakeTransport(
+            Queued(200, mapOf("Cache-Control" to "max-age=60", "ETag" to "\"a\""), "v1"),
+            Queued(200, mapOf("Cache-Control" to "no-store, max-age=60", "ETag" to "\"b\""), "v2"),
+            Queued(200, body = "v3"),
+        )
+        val c = DvbiHttpClient(f, now = { t.t })
+        c.get("https://cg.example/s")
+        t.advance(61_000)
+        assertEquals("v2", c.get("https://cg.example/s").body)
+        assertEquals("not reused although max-age is given", "v3", c.get("https://cg.example/s").body)
+        assertNull("nothing held, so no validator is sent, the older copy included", f.calls[2].second["If-None-Match"])
+    }
+
+    @Test
+    fun rfc7234Clause5_2_2_2NoCacheIsValidatedEveryTime() {
+        val t = Clock()
+        val f = FakeTransport(
+            Queued(200, mapOf("Cache-Control" to "no-cache, max-age=60", "ETag" to "\"a\""), "v1"),
+            Queued(304, emptyMap()),
+        )
+        val c = DvbiHttpClient(f, now = { t.t })
+        c.get("https://cg.example/s")
+        val again = c.get("https://cg.example/s")
+        assertEquals("sent again at once, with the validator", 2, f.calls.size)
+        assertEquals("\"a\"", f.calls[1].second["If-None-Match"])
+        assertEquals("v1", again.body)
+    }
+
+    @Test
+    fun rfc7234Clauses4_2_1And4_2_3FreshnessFromExpiresAndAgeFromAgeAndDate() {
+        val t = Clock(1_790_000_000_000)
+        val f = FakeTransport(
+            Queued(200, mapOf("Cache-Control" to "max-age=60", "Age" to "50"), "aged"),
+            Queued(200, mapOf("Expires" to date(t.t + 120_000), "Date" to date(t.t + 10_000)), "expires"),
+            Queued(200, mapOf("Expires" to "0"), "invalid"),
+            Queued(200, mapOf("Cache-Control" to "max-age=60, max-age=30"), "twice"),
+            Queued(200, body = "last"),
+        )
+        val c = DvbiHttpClient(f, now = { t.t })
+        c.get("https://cg.example/s")
+        assertEquals("max-age 60 less Age 50", 10_000L, c.freshFor("https://cg.example/s"))
+        t.advance(10_000)
+        assertEquals("expires", c.get("https://cg.example/s").body)
+        assertEquals("Expires minus Date", 110_000L, c.freshFor("https://cg.example/s"))
+        t.advance(110_000)
+        assertEquals("invalid", c.get("https://cg.example/s").body)
+        assertEquals("Expires 0 is already expired", 0L, c.freshFor("https://cg.example/s"))
+        assertEquals("twice", c.get("https://cg.example/s").body)
+        assertEquals("two max-age directives: invalid, stale", 0L, c.freshFor("https://cg.example/s"))
+        assertEquals("last", c.get("https://cg.example/s").body)
+        val now = 1_790_000_000_000
+        assertEquals("apparent age from Date when larger than Age", now + 30_000,
+            DvbiHttpClient.expiresAt("max-age=60", null, date(now - 30_000), "5", now, now))
+        assertEquals("the response delay counts", now + 55_000, DvbiHttpClient.expiresAt("max-age=60", null, null, "3", now - 2_000, now))
+        assertEquals("no freshness information, no heuristic", 0L, DvbiHttpClient.expiresAt(null, null, null, null, now, now))
+    }
+
+    @Test
+    fun rfc7234Clause4_3_4A304ReplacesTheStoredHeaderFields() {
+        val t = Clock()
+        val f = FakeTransport(
+            Queued(200, mapOf("Cache-Control" to "max-age=0", "ETag" to "\"a\""), "v1"),
+            Queued(304, mapOf("Cache-Control" to "max-age=30")),
+            Queued(304, emptyMap()),
+            Queued(304, mapOf("Cache-Control" to "no-store")),
+            Queued(200, body = "v2"),
+        )
+        val c = DvbiHttpClient(f, now = { t.t })
+        c.get("https://cg.example/s")
+        c.get("https://cg.example/s")
+        assertEquals("the 304's max-age replaces the stored one", 30_000L, c.freshFor("https://cg.example/s"))
+        t.advance(30_000)
+        c.get("https://cg.example/s")
+        assertEquals("a 304 without Cache-Control keeps the stored max-age=30, from the new validation", 30_000L, c.freshFor("https://cg.example/s"))
+        t.advance(30_000)
+        assertEquals("v1", c.get("https://cg.example/s").body)
+        assertEquals("v2", c.get("https://cg.example/s").body)
+        assertNull("no-store on the 304 removed the stored response", f.calls[4].second["If-None-Match"])
+    }
+
+    @Test
+    fun rfc7230Clause3_4AnIncompleteResponseIsNotStored() {
+        val t = Clock()
+        val f = FakeTransport(
+            Queued(200, mapOf("ETag" to "\"a\""), "v1"),
+            Queued(throws = "unexpected end of stream"),
+            Queued(304, emptyMap()),
+        )
+        val c = DvbiHttpClient(f, now = { t.t })
+        c.get("https://cg.example/s")
+        assertFalse("the transport's failure is a failed request", c.get("https://cg.example/s").ok)
+        t.advance(1_000)
+        assertEquals("the earlier complete response is still the one held", "v1", c.get("https://cg.example/s").body)
+        assertEquals("\"a\"", f.calls[2].second["If-None-Match"])
+    }
+
     @Test
     fun clause4_3_3_2After400Or406TheSameRequestIsNotSentAgain() {
         for (status in listOf(400, 406)) {
