@@ -31,7 +31,7 @@ object ServiceListParser {
 
     private const val SD_NS_PREFIX = "urn:dvb:metadata:servicediscovery:"
     private const val SERVICE_LOGO = "urn:dvb:metadata:cs:HowRelatedCS:2021:1001.2"
-    private const val LINKED_APP_CS = "urn:dvb:metadata:cs:LinkedApplicationCS:2019:"
+    private const val CONTENT_FINISHED = "urn:dvb:metadata:cs:HowRelatedCS:2021:1000.2"
 
     /** Table 15, ServiceType: "If not specified, the service contains linear television." */
     const val LINEAR_TV = "urn:dvb:metadata:cs:ServiceTypeCS:2019:linear"
@@ -154,9 +154,19 @@ object ServiceListParser {
     private fun pickLogo(images: List<Image>): Image? =
         images.firstOrNull { it.contentType.lowercase() in setOf("image/jpeg", "image/png") } ?: images.firstOrNull()
 
-    // The linked applications of [parent] with LinkedApplicationCS:2019 term [term] (clause 5.2.3.1).
-    private fun linkedApps(parent: Element, term: String): List<Image> =
-        relatedImages(parent, LINKED_APP_CS + term)
+    // The linked applications of [parent] (clause 5.2.3.1): RelatedMaterial with a HowRelated@href of
+    // LinkedApplicationCS:2019 and its first MediaUri.
+    private fun linkedApps(parent: Element): List<LinkedApp> =
+        parent.children("RelatedMaterial").mapNotNull { rm ->
+            val term = LinkedApps.term(rm.child("HowRelated")?.attr("href")) ?: return@mapNotNull null
+            val uri = rm.descendants("MediaUri").firstOrNull { it.text.isNotEmpty() } ?: return@mapNotNull null
+            LinkedApp(term, uri.text, uri.attr("contentType") ?: "")
+        }
+
+    // Clause 5.2.7.3, HowRelatedCS:2021:1000.2: "At least one content finished image shall be
+    // provided with the Media Type image/jpeg or image/png for compatibility purposes"; one of those
+    // is taken, else the first.
+    private fun contentFinished(parent: Element): Image? = pickLogo(relatedImages(parent, CONTENT_FINISHED))
 
     // ServiceName in the preferred language, else the one without xml:lang, else the first.
     private fun pickName(names: List<Element>, lang: String): String {
@@ -186,10 +196,11 @@ object ServiceListParser {
             ParentalRating(age, (ma.attr("countryCodes") ?: "").split(',').map { it.trim() }.filter { it.isNotEmpty() })
         } ?: emptyList()
 
-        // An application controlling media presentation signalled for the whole service.
-        val serviceControllingApp = linkedApps(svc, "1.2").firstOrNull()
+        // Linked applications signalled for the whole service (clause 5.2.3.4).
+        val serviceApps = linkedApps(svc)
+        val serviceFinished = contentFinished(svc)
 
-        val instances = svc.children("ServiceInstance").map { parseInstance(it, name, serviceControllingApp) }
+        val instances = svc.children("ServiceInstance").map { parseInstance(it, name, serviceApps, serviceFinished) }
 
         // Clause 6.1, in descending order of precedence, and clause 6.5.2.2 for the identifier.
         val guide = ServiceListRules.resolveGuideSource(
@@ -214,10 +225,11 @@ object ServiceListParser {
             guide = guide,
             guideSid = guideSid,
             docOrder = docOrder,
+            linkedApps = serviceApps,
         )
     }
 
-    private fun parseInstance(inst: Element, serviceName: String, serviceControllingApp: Image?): ServiceInstance {
+    private fun parseInstance(inst: Element, serviceName: String, serviceApps: List<LinkedApp>, serviceFinished: Image?): ServiceInstance {
         // "<attribute name="priority" type="nonNegativeInteger" default="0"/>" (clause 5.5.4)
         val priority = inst.attr("priority")?.trim()?.toIntOrNull() ?: 0
         // Table 16, DisplayName: "When not present, ServiceName is used."
@@ -231,8 +243,10 @@ object ServiceListParser {
         }
 
         // Clause 5.2.3.2: with an application controlling media presentation, delivery parameters
-        // "shall be ignored by the DVB-I client". One at instance level comes first.
-        val controlling = linkedApps(inst, "1.2").firstOrNull() ?: serviceControllingApp
+        // "shall be ignored by the DVB-I client". One at instance level comes first (clause 5.2.3.4),
+        // and one of a type this client can start before one it cannot.
+        val apps = LinkedApps.effective(serviceApps, linkedApps(inst))
+        val controlling = LinkedApps.controlling(apps)
         val delivery = if (controlling != null) {
             Delivery.ControllingApplication(controlling.url, controlling.contentType)
         } else {
@@ -248,6 +262,8 @@ object ServiceListParser {
             protection = if (drm.isEmpty() && ca.isEmpty()) null else Protection(drm, ca),
             accessibility = inst.child("ContentAttributes")?.child("AccessibilityAttributes")
                 ?.let { parseAccessibility(it) } ?: Accessibility(),
+            linkedApps = apps,
+            contentFinished = contentFinished(inst) ?: serviceFinished,
         )
     }
 

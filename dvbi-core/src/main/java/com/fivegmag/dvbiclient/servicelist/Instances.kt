@@ -26,6 +26,10 @@ object Instances {
      * @param drmSupported whether the device has a DRM system for a DRMSystemId (for example
      *        "urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed")
      * @param mbms whether an MBMS Client is registered with this client (TS 103 770 clause 9.3.3)
+     * @param applications whether this client has a linked application engine for HTML pages (clause
+     *        5.2.13, NOTE 1 i)), so that an application controlling media presentation of such a
+     *        type, or of an XML AIT, can be started
+     * @param playlists whether this client plays DVB-I Playlists from a playlist server (clause 5.2.7.2)
      */
     data class Capabilities(
         val dash: Boolean = true,
@@ -33,6 +37,8 @@ object Instances {
         val drmSupported: (String) -> Boolean = { false },
         val packages: List<String> = emptyList(),
         val mbms: Boolean = false,
+        val applications: Boolean = false,
+        val playlists: Boolean = false,
     )
 
     // 1 (Monday) .. 7 (Sunday) of the UTC day containing [ms].
@@ -123,14 +129,19 @@ object Instances {
             // cannot be started shall be discarded." (clause 5.2.13); NOTE 1 i): this client has no
             // linked application engine.
             is Delivery.ControllingApplication ->
-                return "its application controlling media presentation is of type ${d.contentType.ifEmpty { "(none)" }}, which this client cannot start"
+                if (!caps.applications || !LinkedApps.startableType(d.contentType)) {
+                    return "its application controlling media presentation is of type ${d.contentType.ifEmpty { "(none)" }}, which this client cannot start"
+                }
             is Delivery.Mbms -> {
                 MbmsUrl.problem(d.locator)?.let { return "its 5G Broadcast locator $it (3GPP TS 26.347 clause 8.2.2)" }
                 if (!caps.mbms) return "5G Broadcast reception needs an MBMS Client (TS 103 770 clause 9.3.3), and none is available on this device"
             }
             is Delivery.Dash -> if (!caps.dash) return "no DASH player is available"
             is Delivery.Hls -> if (!caps.hls) return "no HLS player is available"
-            is Delivery.DashPlaylist -> return "it is delivered through a playlist server (clause 5.2.7.2), which this client does not support"
+            is Delivery.DashPlaylist -> {
+                if (!caps.playlists) return "it is delivered through a playlist server (clause 5.2.7.2), which this client does not support"
+                if (!caps.dash) return "no DASH player is available"
+            }
             is Delivery.Broadcast -> return "${d.system} broadcast cannot be received by this client"
             is Delivery.Managed -> return "${d.system} delivery cannot be received by this client"
             is Delivery.Other -> return "${d.what} is not a delivery this client knows"

@@ -89,6 +89,8 @@ data class Service(
     /** The identifier content guide requests use (clause 6.5.2.2). */
     val guideSid: String,
     val docOrder: Int,
+    /** The linked applications signalled on the Service (clause 5.2.3.1), every term. */
+    val linkedApps: List<LinkedApp> = emptyList(),
 )
 
 /** Content protection of a service instance (clause 5.5.20). */
@@ -136,6 +138,10 @@ data class ServiceInstance(
     val protection: Protection?,
     /** The access services of the instance's media, ContentAttributes.AccessibilityAttributes (clause 4.5.2, table 1b). */
     val accessibility: Accessibility = Accessibility(),
+    /** The linked applications that apply to this instance, by the precedence of clause 5.2.3.4. */
+    val linkedApps: List<LinkedApp> = emptyList(),
+    /** The content finished image (clause 5.2.7.3), the instance's or else the service's. */
+    val contentFinished: Image? = null,
 )
 
 /**

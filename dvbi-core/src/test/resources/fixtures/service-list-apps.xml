@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Jordi J. Gimenez (5G-MAG)
+Copyright: (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+
+Linked applications (clause 5.2.3) at service and instance level, a playlist server instance (clause
+5.2.7.2) with a content finished image at service level (clause 5.2.7.3).
+-->
+<ServiceList
+  xmlns="urn:dvb:metadata:servicediscovery:2024"
+  xmlns:tva="urn:tva:metadata:2024"
+  xmlns:dvbisd-t="urn:dvb:metadata:servicediscovery-types:2023"
+  id="tag:dvbi.example,2024:servicelist:apps" version="1" xml:lang="en">
+  <Name>Applications List</Name>
+  <ProviderName>Sample Provider</ProviderName>
+  <Service version="1">
+    <UniqueIdentifier>tag:sample,2024:service:apps</UniqueIdentifier>
+    <ServiceInstance priority="1">
+      <DisplayName>Controlled by an application</DisplayName>
+      <RelatedMaterial>
+        <tva:HowRelated href="urn:dvb:metadata:cs:LinkedApplicationCS:2019:1.2"/>
+        <tva:MediaLocator><tva:MediaUri contentType="application/vnd.android.package-archive">http://192.168.1.202:4100/app.apk</tva:MediaUri></tva:MediaLocator>
+      </RelatedMaterial>
+      <RelatedMaterial>
+        <tva:HowRelated href="urn:dvb:metadata:cs:LinkedApplicationCS:2019:1.2"/>
+        <tva:MediaLocator><tva:MediaUri contentType="application/vnd.dvb.ait+xml">http://192.168.1.202:4100/ait/service.aitx</tva:MediaUri></tva:MediaLocator>
+      </RelatedMaterial>
+      <DASHDeliveryParameters>
+        <UriBasedLocation contentType="application/dash+xml"><dvbisd-t:URI>http://192.168.1.202:3014/ignored/manifest.mpd</dvbisd-t:URI></UriBasedLocation>
+      </DASHDeliveryParameters>
+    </ServiceInstance>
+    <ServiceInstance priority="2">
+      <DisplayName>Playlist</DisplayName>
+      <RelatedMaterial>
+        <tva:HowRelated href="urn:dvb:metadata:cs:LinkedApplicationCS:2019:1.1"/>
+        <tva:MediaLocator><tva:MediaUri contentType="text/html">http://192.168.1.202:4100/app/companion.html</tva:MediaUri></tva:MediaLocator>
+      </RelatedMaterial>
+      <DASHDeliveryParameters>
+        <UriBasedLocation contentType="application/xml"><dvbisd-t:URI>http://192.168.1.202:4100/playlist.xml</dvbisd-t:URI></UriBasedLocation>
+      </DASHDeliveryParameters>
+    </ServiceInstance>
+    <ServiceName>Applications</ServiceName>
+    <ProviderName>Sample Provider</ProviderName>
+    <RelatedMaterial>
+      <tva:HowRelated href="urn:dvb:metadata:cs:LinkedApplicationCS:2019:1.1"/>
+      <tva:MediaLocator><tva:MediaUri contentType="text/html">http://192.168.1.202:4100/app/service.html</tva:MediaUri></tva:MediaLocator>
+    </RelatedMaterial>
+    <RelatedMaterial>
+      <tva:HowRelated href="urn:dvb:metadata:cs:LinkedApplicationCS:2019:3"/>
+      <tva:MediaLocator><tva:MediaUri contentType="text/html">http://192.168.1.202:4100/app/home.html</tva:MediaUri></tva:MediaLocator>
+    </RelatedMaterial>
+    <RelatedMaterial>
+      <tva:HowRelated href="urn:dvb:metadata:cs:HowRelatedCS:2021:1000.2"/>
+      <tva:MediaLocator><tva:MediaUri contentType="image/webp">http://192.168.1.202:4100/img/finished.webp</tva:MediaUri></tva:MediaLocator>
+      <tva:MediaLocator><tva:MediaUri contentType="image/png">http://192.168.1.202:4100/img/finished.png</tva:MediaUri></tva:MediaLocator>
+    </RelatedMaterial>
+  </Service>
+</ServiceList>

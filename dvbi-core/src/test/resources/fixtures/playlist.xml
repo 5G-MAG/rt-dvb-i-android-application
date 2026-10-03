@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Jordi J. Gimenez (5G-MAG)
+Copyright: (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+
+A DVB-I Playlist (clause 5.7.1, table 39).
+-->
+<Playlist xmlns="urn:dvb:metadata:servicediscovery:2024">
+  <PlaylistEntry>http://192.168.1.202:3014/clip1/manifest.mpd</PlaylistEntry>
+  <PlaylistEntry> http://192.168.1.202:3014/clip2/manifest.mpd </PlaylistEntry>
+</Playlist>
