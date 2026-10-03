@@ -1,20 +1,54 @@
-<h1 align="center">DVB-I Client</h1>
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-Under_Development-yellow" alt="Under Development">
-  <img src="https://img.shields.io/badge/License-5G--MAG%20Public%20License%20(v1.0)-blue" alt="License">
+  <img src=".github/banner.svg" width="100%" alt="Reference Tools · DVB-I Services over 5G Systems: DVB-I Android Application">
 </p>
+
+<p align="center">
+  A native Android DVB-I client that discovers a service list, presents its channels with their
+  content guide, and plays them with Media3 ExoPlayer, per ETSI TS 103 770.
+</p>
+
+<p align="center">
+  <img alt="Status: under development"
+    src="https://img.shields.io/badge/Status-Under_Development-yellow">
+  <a href="https://github.com/5G-MAG/rt-dvb-i-android-application/releases"><img alt="Version"
+    src="https://img.shields.io/github/v/release/5G-MAG/rt-dvb-i-android-application?label=Version&sort=semver"></a>
+  <a href="LICENSE"><img alt="License: 5G-MAG Public License v1.0"
+    src="https://img.shields.io/badge/License-5G--MAG%20PL%20v1.0-blue"></a>
+</p>
+
+<p align="center">
+  <a href="https://www.5g-mag.com/reference-tools/dvb-i">Project page</a> &nbsp;&middot;&nbsp;
+  <a href="https://github.com/5G-MAG/rt-dvb-i-android-application/issues">Issues</a> &nbsp;&middot;&nbsp;
+  <a href="https://www.5g-mag.com/contributing">Contributing</a>
+</p>
+
+---
+
+## At a glance
+
+|  |  |
+|---|---|
+| **Implements** | ETSI TS 103 770 V1.2.1 (2024-09), *Digital Video Broadcasting (DVB); Service Discovery and Programme Metadata for DVB-I*, client side |
+| **Runs on** | Android 10 (API level 29) or newer |
+| **Plays** | DASH and HLS over HTTP, via Media3 ExoPlayer 1.10.0 |
+| **Part of** | [DVB-I Services over 5G Systems](https://www.5g-mag.com/reference-tools/dvb-i), alongside [rt-dvb-i-application](https://github.com/5G-MAG/rt-dvb-i-application) (the browser client), [rt-dvb-i-application-provider](https://github.com/5G-MAG/rt-dvb-i-application-provider) (the list and guide), [rt-dvb-i-service-list-registry](https://github.com/5G-MAG/rt-dvb-i-service-list-registry) (discovery), [rt-dvb-i-examples](https://github.com/5G-MAG/rt-dvb-i-examples) (runnable demos) and [rt-5gms-application](https://github.com/5G-MAG/rt-5gms-application) (the Exo DVB-I Player) |
 
 ## Introduction
 
-The DVB-I Client is a native Android application that finds, lists and plays DVB-I services as specified in
-ETSI TS 103 770 V1.2.1 (Service Discovery and Programme Metadata for DVB-I). It follows the conventions of the
-[5GMSd-Aware Application](../fivegmag_5GMSdAwareApplication) in this repository (Gradle layout, plugin and
-library versions, Media3 ExoPlayer 1.10.0 for playback).
+This is a DVB-I client of the architecture in TS 103 770 clause 4.1, written natively for Android. It
+can be pointed at a service list URL, or can ask a Service List Registry which lists exist for a
+country and offer the results. It then lists the channels with now/next, shows a schedule, and plays
+the selected service.
 
-Baseline: ETSI TS 103 770 V1.2.1 (2024-09). Where the client follows ETSI TS 102 796 (cache rules) it is
-V1.8.1; the MBMS URL check follows 3GPP TS 26.347 V18.1.0.
+The DVB-I logic is ported from the browser client
+[rt-dvb-i-application](https://github.com/5G-MAG/rt-dvb-i-application), with its clause citations.
+The Gradle layout, plugin and library versions follow the 5GMSd-Aware Application
+(`fivegmag_5GMSdAwareApplication`) in [rt-5gms-application](https://github.com/5G-MAG/rt-5gms-application).
 
-## What it does
+This repository started as the folder `fivegmag_DVBIClient` of rt-5gms-application (pull request
+[#55](https://github.com/5G-MAG/rt-5gms-application/pull/55)); its history was moved here unchanged.
+
+### What it does
 
 | Function | ETSI TS 103 770 V1.2.1 |
 | --- | --- |
@@ -29,20 +63,6 @@ V1.8.1; the MBMS URL check follows 3GPP TS 26.347 V18.1.0.
 | Now/next in the channel list and the player, a schedule view, programme information; a 404 from the content guide re-acquires the service list, then backs off | clauses 4.3.3.4, 6.1, 6.5, 6.6 |
 | Parental restriction by age, the programme's rating taking precedence over the service's | clause 5.5.28 |
 
-The DVB-I logic is ported from the browser client
-[rt-dvb-i-application](https://github.com/5G-MAG/rt-dvb-i-application), with its clause citations.
-
-### Plugging in an MBMS Client
-
-`mbms/IMbmsStreamingClient.kt` is the part of the TS 26.347 Media Streaming Service API (clause 6.3, method
-names of the annex B.3 IDL) this client calls: `registerStreamingApp`, `getStreamingServices`,
-`startStreamingService`, `stopStreamingService`, `deregisterStreamingApp`, and the callbacks
-`registerStreamingResponse`, `serviceStarted`, `streamingServiceError` and `streamingServiceListUpdate`. The
-client registers with the service class of TS 103 770 table 106, `urn:dvb:metadata:serviceClass:DVB-I_Service_Instance:1`.
-`NoMbmsClient` refuses the registration, so 5G Broadcast instances are discarded and another instance plays.
-An Android MBMS Client implements the interface and is set in `DvbiSession.mbmsClient`; the player then starts
-the User Service whose `serviceId` is the locator's prefix and plays its `ManifestURI`.
-
 ### Not implemented
 
 Linked applications and XML AIT (no application engine: an instance with an application controlling media
@@ -50,14 +70,24 @@ presentation is discarded, as clause 5.2.13 requires), playlist servers (clause 
 Box Sets (clauses 6.7, 6.8), on-demand programmes, the daily service list update (clause 5.1.7), and
 re-authentication after 401 or 403.
 
-## Building
+## Specification
+
+Built against **ETSI TS 103 770 V1.2.1 (2024-09)**, a version rather than a release name. Where the
+client follows ETSI TS 102 796 (cache rules) it is V1.8.1; the MBMS URL check and the MBMS Client
+interface follow 3GPP TS 26.347 V18.1.0.
+
+Clause-by-clause coverage, and what is still absent, is recorded on the project page rather than
+here: <https://www.5g-mag.com/reference-tools/dvb-i>
+
+For 5G Broadcast it checks and shows the `mbms://` signalling rather than playing it; see
+[5G Broadcast and the MBMS Client](#5g-broadcast-and-the-mbms-client) below.
+
+## Install dependencies
 
 The build needs a JDK 17 or 21 (the Android Gradle Plugin 9.2.0 does not run on newer ones) and the Android
 SDK with platform `android-37.0` and build-tools `37.0.0`. Everything else (Gradle 9.5.0, the plugins and the
 libraries) is downloaded by the Gradle wrapper from Google's Maven repository and Maven Central. No 5G-MAG
 library has to be published to Maven Local first.
-
-### Installing the toolchain in the user directory
 
 These commands install the toolchain without root rights and without changing any shell profile. They are
 the ones used to build this application on Linux x86_64.
@@ -87,36 +117,24 @@ $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-3
 
 The checksums are the ones published on adoptium.net and developer.android.com/studio for these files.
 
-### Building the APK and running the tests
+## Downloading
+
+```bash
+cd ~
+git clone https://github.com/5G-MAG/rt-dvb-i-android-application.git
+```
+
+## Building
 
 With `JAVA_HOME` and `ANDROID_HOME` set as above:
 
 ```sh
-cd fivegmag_DVBIClient/
+cd rt-dvb-i-android-application/
 ./gradlew test             # JVM unit tests
 ./gradlew assembleDebug    # app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### Plain HTTP and the network security configuration
-
-ETSI TS 103 770 V1.2.1 clause 7.3 requires HTTP over TLS towards service list registries, service list servers
-and content guide servers, with one exception: "For the specific case that a DVB-I client connects to a DVB-I
-metadata endpoint located on the same private subnet (see clause 3 of IETF RFC 1918 [27]), HTTP may be used
-without TLS."
-
-Android blocks plain HTTP unless the application's network security configuration allows it. This
-application does not allow it in general: the build writes a configuration that permits cleartext only to the
-hosts named in the Gradle property `dvbiCleartextHosts` (comma separated), and to no other host. The default
-is `192.168.1.202`, the demo laptop's Wi-Fi address. For another address:
-
-```sh
-./gradlew assembleDebug -PdvbiCleartextHosts=192.168.0.10
-```
-
-The list is fixed when the APK is built, because Android reads the network security configuration from the
-APK. HTTPS works towards any host.
-
-## Install
+## Installing
 
 Over adb, with the phone connected by USB and USB debugging enabled:
 
@@ -128,7 +146,9 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 Without adb, copy `app-debug.apk` to the phone (for example by download or file transfer) and open it there,
 allowing the installation of applications from that source when Android asks.
 
-## The demo over Wi-Fi
+## Running
+
+### The demo over Wi-Fi
 
 The phone and the laptop are on the same Wi-Fi network (for the demo, 192.168.1.0/24, with the laptop at
 192.168.1.202). On the laptop, start the DVB-I live demo of
@@ -160,7 +180,52 @@ In **Settings**, *Query the registry and pick a list* sends the query (with `Tar
 set) and offers the lists with the default marked; *Save* installs the chosen one. The channel list shows the
 plain HTTP warning at the top while the endpoints are reached without TLS.
 
+## Configuration
+
+### Plain HTTP and the network security configuration
+
+ETSI TS 103 770 V1.2.1 clause 7.3 requires HTTP over TLS towards service list registries, service list servers
+and content guide servers, with one exception: "For the specific case that a DVB-I client connects to a DVB-I
+metadata endpoint located on the same private subnet (see clause 3 of IETF RFC 1918 [27]), HTTP may be used
+without TLS."
+
+Android blocks plain HTTP unless the application's network security configuration allows it. This
+application does not allow it in general: the build writes a configuration that permits cleartext only to the
+hosts named in the Gradle property `dvbiCleartextHosts` (comma separated), and to no other host. The default
+is `192.168.1.202`, the demo laptop's Wi-Fi address. For another address:
+
+```sh
+./gradlew assembleDebug -PdvbiCleartextHosts=192.168.0.10
+```
+
+The list is fixed when the APK is built, because Android reads the network security configuration from the
+APK. HTTPS works towards any host.
+
+## 5G Broadcast and the MBMS Client
+
+`mbms/IMbmsStreamingClient.kt` is the part of the TS 26.347 Media Streaming Service API (clause 6.3, method
+names of the annex B.3 IDL) this client calls: `registerStreamingApp`, `getStreamingServices`,
+`startStreamingService`, `stopStreamingService`, `deregisterStreamingApp`, and the callbacks
+`registerStreamingResponse`, `serviceStarted`, `streamingServiceError` and `streamingServiceListUpdate`. The
+client registers with the service class of TS 103 770 table 106, `urn:dvb:metadata:serviceClass:DVB-I_Service_Instance:1`.
+`NoMbmsClient` refuses the registration, so 5G Broadcast instances are discarded and another instance plays.
+An Android MBMS Client implements the interface and is set in `DvbiSession.mbmsClient`; the player then starts
+the User Service whose `serviceId` is the locator's prefix and plays its `ManifestURI`.
+
 ## Development
 
 This project follows the [Gitflow workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 The `development` branch of this project serves as an integration branch for new features.
+
+`./gradlew test` runs the JVM unit tests (81 cases), which need no device. The activities have no
+automated tests.
+
+## Contributing
+
+Contributions are welcome. How to raise an issue, fork the repository and open a pull request, and
+the Contributor License Agreement required before code can be merged, are described at
+<https://www.5g-mag.com/contributing>.
+
+## License
+
+Distributed under the 5G-MAG Public License v1.0. See [LICENSE](LICENSE).
