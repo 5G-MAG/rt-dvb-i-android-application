@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Daniel Silhavy (5G-MAGflix design), Jordi J. Gimenez (DVB-I adaptation)
+Copyright: (C) 2023-2026 Fraunhofer FOKUS; (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+Derived from rt-5gms-application fivegmag_5GMSdAwareApplication (5G-MAGflix) res/values/styles.xml.
+-->
+<resources>
+    <!-- Content card style for the landing page grid -->
+    <style name="ContentCardStyle" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/card_dark</item>
+        <item name="cardCornerRadius">8dp</item>
+        <item name="cardElevation">4dp</item>
+    </style>
+
+    <!-- Play button style for the detail page -->
+    <style name="PlayButtonStyle" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/fivegmag_blue</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="cornerRadius">24dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">@font/ubuntu_medium</item>
+    </style>
+
+    <!-- Settings button style -->
+    <style name="SettingsButtonStyle" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="strokeColor">@color/fivegmag_blue</item>
+        <item name="android:textColor">@color/fivegmag_blue</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <!-- Media type badge -->
+    <style name="MediaTypeBadge">
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:fontFamily">@font/ubuntu_medium</item>
+    </style>
+
+    <!-- DVB-I: an information badge on a channel card or in the player (an icon, or a short label),
+         in the size of MediaTypeBadge. -->
+    <style name="InfoBadgeIcon">
+        <item name="android:layout_width">22dp</item>
+        <item name="android:layout_height">18dp</item>
+        <item name="android:paddingStart">3dp</item>
+        <item name="android:paddingEnd">3dp</item>
+        <item name="android:paddingTop">1dp</item>
+        <item name="android:paddingBottom">1dp</item>
+        <item name="android:background">@drawable/bg_info_badge</item>
+        <item name="android:scaleType">fitCenter</item>
+    </style>
+
+    <style name="InfoBadgeLabel" parent="MediaTypeBadge">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">18dp</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingStart">5dp</item>
+        <item name="android:paddingEnd">5dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:background">@drawable/bg_info_badge</item>
+    </style>
+
+    <!-- DVB-I: a section heading, as the headings of 5G-MAGflix's detail and settings pages. -->
+    <style name="SectionHeading">
+        <item name="android:fontFamily">@font/ubuntu_medium</item>
+        <item name="android:textColor">@color/fivegmag_blue</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+</resources>

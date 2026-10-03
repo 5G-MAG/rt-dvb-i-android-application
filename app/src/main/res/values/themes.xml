@@ -106,6 +106,6 @@ https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
         <item name="windowSplashScreenBackground">@color/surface_dark</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         <item name="windowSplashScreenAnimationDuration">800</item>
-        <item name="postSplashScreenTheme">@style/Theme.DVBIClient</item>
+        <item name="postSplashScreenTheme">@style/Theme.DVBIClient.NoActionBar</item>
     </style>
 </resources>

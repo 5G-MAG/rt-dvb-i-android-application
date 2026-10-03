@@ -1,56 +1,233 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Daniel Silhavy (5G-MAGflix design), Jordi J. Gimenez (DVB-I adaptation)
+Copyright: (C) 2023-2026 Fraunhofer FOKUS; (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+Derived from rt-5gms-application fivegmag_5GMSdAwareApplication (5G-MAGflix) res/layout/activity_main.xml.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:background="@color/surface_dark"
+    tools:context="com.fivegmag.dvbiclient.MainActivity">
 
-    <TextView
-        android:id="@+id/tlsWarning"
+    <!-- Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/mainToolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/warning_bg"
-        android:padding="12dp"
-        android:textColor="@color/warning_fg"
-        android:textIsSelectable="true"
-        android:visibility="gone" />
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/surface_dark"
+        app:layout_constraintTop_toTopOf="parent"
+        app:subtitleTextColor="@color/on_surface_secondary"
+        app:titleTextColor="@color/on_surface_primary">
 
-    <TextView
-        android:id="@+id/statusText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="8dp"
-        android:text="@string/no_service_list"
-        android:textIsSelectable="true" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp">
-
-        <EditText
-            android:id="@+id/channelNumber"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:autofillHints=""
-            android:hint="@string/channel_number_hint"
-            android:imeOptions="actionGo"
-            android:inputType="number" />
-
-        <Button
-            android:id="@+id/channelGo"
-            style="?attr/materialButtonOutlinedStyle"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/go" />
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/logoText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/ubuntu_medium"
+                android:textSize="20sp" />
+
+            <!-- The installed service list: its Name and version -->
+            <TextView
+                android:id="@+id/listText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/on_surface_secondary"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:text="5G-MAG · version 10" />
+        </LinearLayout>
+
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <!-- Notices: plain HTTP (clause 7.3) and service list problems. One line; a tap shows the text. -->
+    <LinearLayout
+        android:id="@+id/noticeBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/bg_info_badge"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        android:minHeight="48dp"
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="6dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mainToolbar"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/noticeIcon"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_lock_open"
+                app:tint="@color/badge_age" />
+
+            <TextView
+                android:id="@+id/noticeSummary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/on_surface_primary"
+                android:textSize="13sp"
+                tools:text="Not over TLS: 1 endpoint" />
+
+            <ImageView
+                android:id="@+id/noticeExpand"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_expand_more"
+                app:tint="@color/on_surface_secondary" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/noticeDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="6dp"
+            android:lineSpacingMultiplier="1.2"
+            android:textColor="@color/on_surface_secondary"
+            android:textIsSelectable="true"
+            android:textSize="12sp"
+            android:visibility="gone" />
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/channelList"
+    <!-- Empty and error states (nothing to show, or the service list could not be loaded) -->
+    <LinearLayout
+        android:id="@+id/emptyState"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/noticeBar">
+
+        <ImageView
+            android:id="@+id/emptyStateIcon"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_wifi_off"
+            app:tint="@color/on_surface_secondary" />
+
+        <TextView
+            android:id="@+id/emptyStateTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/ubuntu_medium"
+            android:gravity="center"
+            android:textColor="@color/on_surface_primary"
+            android:textSize="18sp"
+            tools:text="@string/load_failed" />
+
+        <TextView
+            android:id="@+id/emptyStateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:textColor="@color/on_surface_secondary"
+            android:textIsSelectable="true"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/retryButton"
+                style="@style/PlayButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:text="@string/retry" />
+
+            <Button
+                android:id="@+id/settingsButton"
+                style="@style/SettingsButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:text="@string/settings" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Shimmer loading placeholder -->
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/shimmerLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        app:shimmer_auto_start="true"
+        app:shimmer_duration="1200"
+        app:shimmer_base_alpha="0.6"
+        app:shimmer_highlight_alpha="0.9"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/noticeBar">
 
-</LinearLayout>
+        <include layout="@layout/shimmer_placeholder_home" />
+
+    </com.facebook.shimmer.ShimmerFrameLayout>
+
+    <!-- Pull-to-refresh wrapping the channel rows -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/noticeBar">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/contentGrid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="6dp" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

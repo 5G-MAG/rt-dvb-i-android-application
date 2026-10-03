@@ -75,6 +75,11 @@ dependencies {
     // Splash screen (compat for pre-Android 12), as in 5G-MAGflix
     implementation 'androidx.core:core-splashscreen:1.2.0'
 
+    // Layout and home screen components of 5G-MAGflix
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0'
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
+
     // Image loading (service logos)
     implementation 'io.coil-kt:coil:2.7.0'
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'

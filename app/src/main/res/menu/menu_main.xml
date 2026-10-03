@@ -1,12 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Daniel Silhavy (5G-MAGflix design), Jordi J. Gimenez (DVB-I adaptation)
+Copyright: (C) 2023-2026 Fraunhofer FOKUS; (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+Derived from rt-5gms-application fivegmag_5GMSdAwareApplication (5G-MAGflix) res/menu/menu_main.xml.
+-->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_reload"
-        android:title="@string/reload"
+        android:id="@+id/action_channel_number"
+        android:icon="@drawable/ic_dialpad"
+        android:title="@string/channel_number_hint"
+        app:iconTint="@color/on_surface_primary"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_settings"
+        android:icon="@drawable/ic_settings"
         android:title="@string/settings"
+        app:iconTint="@color/on_surface_primary"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_reload"
+        android:title="@string/reload"
+        app:showAsAction="never" />
 </menu>

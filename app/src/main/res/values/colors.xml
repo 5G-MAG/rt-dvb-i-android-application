@@ -23,6 +23,21 @@ https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
     <color name="status_bar_dark">#FF000000</color>
     <color name="divider_dark">#FF2C2C2C</color>
     <color name="placeholder_bg">#FF2C2C2C</color>
+    <color name="flix_red">#FFE50914</color>
+    <color name="placeholder_icon">#FF5A5A5A</color>
+
+    <!-- DVB-I information badges, in the hues of the browser client's channel badges
+         (rt-dvb-i-application public/style.css, .ch-badge-*). -->
+    <color name="badge_bg">#14FFFFFF</color>
+    <color name="badge_stroke">#33FFFFFF</color>
+    <color name="badge_access">#FF34C759</color>
+    <color name="badge_subtitles">#FF64D2FF</color>
+    <color name="badge_age">#FFFF9F0A</color>
+    <color name="badge_delivery">#FFDA8FFF</color>
+    <color name="badge_off">#FFFF6B6B</color>
+    <color name="badge_5g_ok">#FFFFB340</color>
+    <color name="badge_5g_bad">#FFFF6961</color>
+    <color name="badge_neutral">#FFB3B3B3</color>
 
     <color name="warning_bg">#FFFFF3CD</color>
     <color name="warning_fg">#FF5C4400</color>
