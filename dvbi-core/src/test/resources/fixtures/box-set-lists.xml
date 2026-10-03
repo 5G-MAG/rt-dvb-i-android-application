@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Jordi J. Gimenez (5G-MAG)
+Copyright: (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+
+A Box Set Lists response (clause 6.8.3.3): two box sets with their image and Template XML AIT, and a
+results group with no title and no pagination links (fewer than 30 results, clause 6.9).
+-->
+<TVAMain xmlns="urn:tva:metadata:2024" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xml:lang="en">
+  <ProgramDescription>
+    <GroupInformationTable>
+      <GroupInformation groupId="crid://example.com/boxsets/signals" ordered="true" numOfItems="8">
+        <GroupType xsi:type="ProgramGroupTypeType" value="series"/>
+        <BasicDescription>
+          <Title type="main">Signals</Title>
+          <RelatedMaterial>
+            <HowRelated href="urn:fvc:metadata:cs:HowRelatedCS:2018:templateAIT"/>
+            <MediaLocator>
+              <MediaUri/>
+              <AuxiliaryURI contentType="application/vnd.dvb.ait+xml">
+                http://192.168.1.202:4100/ait/template.aitx
+              </AuxiliaryURI>
+            </MediaLocator>
+          </RelatedMaterial>
+          <RelatedMaterial>
+            <HowRelated href="urn:tva:metadata:cs:HowRelatedCS:2012:19"/>
+            <MediaLocator><MediaUri contentType="image/png">http://192.168.1.202:4100/img/signals.png</MediaUri></MediaLocator>
+          </RelatedMaterial>
+        </BasicDescription>
+      </GroupInformation>
+      <GroupInformation groupId="crid://example.com/boxsets/coverage" ordered="true" numOfItems="4">
+        <GroupType xsi:type="ProgramGroupTypeType" value="series"/>
+        <BasicDescription><Title type="main">Coverage</Title></BasicDescription>
+      </GroupInformation>
+      <GroupInformation groupId="crid://example.com/boxsets/results" numOfItems="2">
+        <GroupType xsi:type="ProgramGroupTypeType" value="otherCollection"/>
+      </GroupInformation>
+    </GroupInformationTable>
+  </ProgramDescription>
+</TVAMain>

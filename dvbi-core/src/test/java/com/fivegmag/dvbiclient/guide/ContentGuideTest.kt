@@ -81,4 +81,38 @@ class ContentGuideTest {
         g.nowNext(alpha)
         assertEquals(3, t.urls.size)
     }
+
+    @Test
+    fun clause5_2_4OnDemandOfferedOnlyWhenAvailableAndTheTemplateAitHasAnApplication() {
+        val od = GuideParser.parseResults(Fixtures.read("more-episodes.xml")).items.first { it.onDemand != null }.onDemand!!
+        val inWindow = Instant.parse("2026-10-02T10:00:00Z").toEpochMilli()
+        var template = Fixtures.read("xml-ait.xml")
+        val t = Recording { url ->
+            when {
+                url.startsWith("http://192.168.1.202:4100/ait/template.aitx") -> HttpResponse(200, emptyMap(), template)
+                url.startsWith("http://192.168.1.202:4100/ait/ep5.aitx") -> HttpResponse(200, emptyMap(), Fixtures.read("xml-ait.xml"))
+                else -> HttpResponse(404, emptyMap(), "")
+            }
+        }
+        val g = ContentGuide(DvbiHttpClient(t))
+        assertTrue(g.onDemandOffered(od, listOf("R1"), inWindow))
+        assertEquals("clause 5.2.4.4.6 contextual parameters", "http://192.168.1.202:4100/ait/template.aitx?regionID%5B%5D=R1&lloc=epg", t.urls[0])
+        assertFalse("table 52: outside the availability window", g.onDemandOffered(od, emptyList(), Instant.parse("2027-01-01T00:00:00Z").toEpochMilli()))
+        assertEquals("clause 5.2.4.3: the player of the deep-linked XML AIT",
+            "http://192.168.1.202:4100/player.html?pid=5", g.onDemandPlayer(od, emptyList()))
+
+        // A Template XML AIT without an application this client can run hides the item.
+        template = Fixtures.read("xml-ait.xml").replace("text/html", "application/vnd.dvbi.non")
+        val g2 = ContentGuide(DvbiHttpClient(t))
+        assertFalse(g2.onDemandOffered(od, emptyList(), inWindow))
+    }
+
+    @Test
+    fun clause6_9ResultsPagesAreRequestedAsGiven() {
+        val t = Recording { HttpResponse(200, emptyMap(), Fixtures.read("more-episodes.xml")) }
+        val g = ContentGuide(DvbiHttpClient(t))
+        val next = g.results("http://192.168.1.202:4100/more?pid=p").value!!.links.getValue("next")
+        g.results(next)
+        assertEquals("the link is used without modification", "http://192.168.1.202:4100/more?page=3", t.urls[1])
+    }
 }

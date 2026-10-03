@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Jordi J. Gimenez (5G-MAG)
+Copyright: (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+
+An XML AIT (clause 5.2.4) listing an HbbTV application of the highest priority, two HTML pages, and
+the type application/vnd.dvbi.non that clause 5.2.4.2 names for content not provided.
+-->
+<mhp:ServiceDiscovery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mhp="urn:dvb:mhp:2009">
+  <mhp:ApplicationDiscovery DomainName="example.com">
+    <mhp:ApplicationList>
+      <mhp:Application>
+        <mhp:appName Language="eng">HbbTV player</mhp:appName>
+        <mhp:applicationIdentifier><mhp:orgId>1</mhp:orgId><mhp:appId>1</mhp:appId></mhp:applicationIdentifier>
+        <mhp:applicationDescriptor>
+          <mhp:type><mhp:OtherApp>application/vnd.hbbtv.xhtml+xml</mhp:OtherApp></mhp:type>
+          <mhp:controlCode>AUTOSTART</mhp:controlCode>
+          <mhp:visibility>VISIBLE_ALL</mhp:visibility>
+          <mhp:serviceBound>false</mhp:serviceBound>
+          <mhp:priority>9</mhp:priority>
+          <mhp:version>01</mhp:version>
+        </mhp:applicationDescriptor>
+        <mhp:applicationTransport xsi:type="mhp:HTTPTransportType"><mhp:URLBase>http://192.168.1.202:4100/</mhp:URLBase></mhp:applicationTransport>
+        <mhp:applicationLocation>hbbtv.html</mhp:applicationLocation>
+      </mhp:Application>
+      <mhp:Application>
+        <mhp:appName Language="eng">Low</mhp:appName>
+        <mhp:applicationDescriptor>
+          <mhp:type><mhp:OtherApp>text/html</mhp:OtherApp></mhp:type>
+          <mhp:priority>1</mhp:priority>
+        </mhp:applicationDescriptor>
+        <mhp:applicationTransport xsi:type="mhp:HTTPTransportType"><mhp:URLBase>http://192.168.1.202:4100/</mhp:URLBase></mhp:applicationTransport>
+        <mhp:applicationLocation>low.html</mhp:applicationLocation>
+      </mhp:Application>
+      <mhp:Application>
+        <mhp:appName Language="eng">Player</mhp:appName>
+        <mhp:applicationDescriptor>
+          <mhp:type><mhp:OtherApp>text/html</mhp:OtherApp></mhp:type>
+          <mhp:priority>3</mhp:priority>
+        </mhp:applicationDescriptor>
+        <mhp:applicationTransport xsi:type="mhp:HTTPTransportType"><mhp:URLBase><![CDATA[http://192.168.1.202:4100/]]></mhp:URLBase></mhp:applicationTransport>
+        <mhp:applicationLocation>player.html?pid=5</mhp:applicationLocation>
+      </mhp:Application>
+      <mhp:Application>
+        <mhp:appName Language="eng">Not provided</mhp:appName>
+        <mhp:applicationDescriptor>
+          <mhp:type><mhp:OtherApp>application/vnd.dvbi.non</mhp:OtherApp></mhp:type>
+          <mhp:priority>5</mhp:priority>
+        </mhp:applicationDescriptor>
+        <mhp:applicationLocation>none</mhp:applicationLocation>
+      </mhp:Application>
+    </mhp:ApplicationList>
+  </mhp:ApplicationDiscovery>
+</mhp:ServiceDiscovery>

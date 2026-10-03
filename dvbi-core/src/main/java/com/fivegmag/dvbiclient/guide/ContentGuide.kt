@@ -9,6 +9,8 @@ https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
 
 package com.fivegmag.dvbiclient.guide
 
+import com.fivegmag.dvbiclient.ait.AitApplication
+import com.fivegmag.dvbiclient.ait.XmlAit
 import com.fivegmag.dvbiclient.http.DvbiHttpClient
 import com.fivegmag.dvbiclient.http.HttpResult
 import com.fivegmag.dvbiclient.servicelist.Service
@@ -65,6 +67,76 @@ class ContentGuide(private val http: DvbiHttpClient) {
         }
     }
 
+    /**
+     * A page of More Episodes (clause 6.7) or Box Set (clause 6.8) results from [url], a URL built by
+     * [GuideRequests] or a pagination link, which "A DVB-I client shall only use ... without
+     * modification" (clause 6.9).
+     */
+    fun results(url: String): Result<Results> {
+        val r = http.get(url)
+        val reacquire = outcome(r, url, url)
+        if (!r.ok) return Result(null, r, reacquire)
+        return try {
+            Result(GuideParser.parseResults(r.body), r)
+        } catch (e: XmlFormatException) {
+            Result(null, r, error = e.message)
+        }
+    }
+
+    /**
+     * The applications of the XML AIT at [url], requested with the contextual parameters of clause
+     * 5.2.4.4.6 ([regions], [launchLocation]).
+     */
+    fun ait(url: String, regions: List<String>, launchLocation: String): Result<List<AitApplication>> {
+        val r = http.get(GuideRequests.aitUrl(url, regions, launchLocation))
+        if (!r.ok) return Result(null, r)
+        return try {
+            Result(XmlAit.parse(r.body), r)
+        } catch (e: XmlFormatException) {
+            Result(null, r, error = e.message)
+        }
+    }
+
+    private val templates = HashMap<String, Pair<Boolean, Long>>()
+
+    /**
+     * Whether the Template XML AIT at [url] lists an application this client can run: "the client
+     * device shall assume it can run the application if any of the applications listed meet the
+     * compatibility criteria" (clause 5.2.4.4.1), the applicationLocation not being used. Results are
+     * kept by URL ("Client devices shall perform a textual comparison of the Template XML AIT URL")
+     * until the expiry of clause 5.2.4.4.5; a result past its expiry is still used while a new one
+     * cannot be had.
+     */
+    fun templateCompatible(url: String, regions: List<String>, nowMs: Long): Boolean {
+        val known = synchronized(templates) { templates[url] }
+        if (known != null && known.second > nowMs) return known.first
+        val r = ait(url, regions, LAUNCH_LOCATION_EPG)
+        val apps = r.value ?: return known?.first ?: false
+        val ok = apps.any { it.type.trim().lowercase() in XmlAit.STARTABLE_TYPES }
+        synchronized(templates) { templates[url] = ok to XmlAit.templateExpiry(nowMs, r.http?.maxAgeMs, r.http?.expires) }
+        return ok
+    }
+
+    /**
+     * Whether an on-demand programme may be offered: "A DVB-I client shall determine both content
+     * availability and its capability of playing the content before an item of content is indicated
+     * as available to the user." (clause 5.2.4.1): inside its availability window (table 52), with a
+     * content deep-linked XML AIT, and playable by its Template XML AIT when it has one.
+     */
+    fun onDemandOffered(od: OnDemandProgram, regions: List<String>, nowMs: Long): Boolean {
+        if (!od.availableAt(nowMs)) return false
+        if (od.programUrlType.trim().lowercase() != XmlAit.CONTENT_TYPE) return false
+        return od.auxiliaryUrl?.let { templateCompatible(it, regions, nowMs) } ?: true
+    }
+
+    /**
+     * The URL of the on-demand player for [od]: the application clause 5.2.4.2 selects from its
+     * content deep-linked XML AIT, or null: "If the content deep-linked XML AIT is unavailable the
+     * client device shall consider the content to be unavailable" (clause 5.2.4.3).
+     */
+    fun onDemandPlayer(od: OnDemandProgram, regions: List<String>): String? =
+        ait(od.programUrl, regions, LAUNCH_LOCATION_EPG).value?.let { XmlAit.select(it) }?.url
+
     private fun events(url: String, key: String): Result<List<GuideEvent>> {
         val r = http.get(url)
         val reacquire = outcome(r, url, key)
@@ -92,5 +164,10 @@ class ContentGuide(private val http: DvbiHttpClient) {
         }
         reacquired.add(key)
         return true
+    }
+
+    companion object {
+        /** The lloc value for a launch from the content guide (clause 5.2.4.4.6). */
+        const val LAUNCH_LOCATION_EPG = "epg"
     }
 }

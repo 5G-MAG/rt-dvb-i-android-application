@@ -54,4 +54,25 @@ class GuideRequestsTest {
         assertEquals("UTF-8 octets", "%C3%A9", GuideRequests.encodeQueryComponent("é"))
         assertEquals("a space as %20", "a%20b", GuideRequests.encodeQueryComponent("a b"))
     }
+
+    @Test
+    fun clause6_2_2SquareBracketsOfRepeatedParametersArePercentEncoded() {
+        assertEquals("https://cg.example/more?pid=crid%3A%2F%2Fa%2Fb&type=ondemand&regionID%5B%5D=1234&regionID%5B%5D=5678",
+            GuideRequests.moreEpisodesUrl("https://cg.example/more", "crid://a/b", listOf("1234", "5678")))
+        assertEquals("https://cg.example/group/categories?sid%5B%5D=s1",
+            GuideRequests.boxSetCategoriesUrl("https://cg.example/group/", listOf("s1"), emptyList()))
+        assertEquals("https://cg.example/group/?groupId=crid%3A%2F%2Fcat%2F1&sid%5B%5D=s1&regionID%5B%5D=r",
+            GuideRequests.boxSetListsUrl("https://cg.example/group/", "crid://cat/1", listOf("s1"), listOf("r")))
+        assertEquals("https://cg.example/group/contents?groupId=crid%3A%2F%2Fbox%2F1&format=paginated",
+            GuideRequests.boxSetContentsUrl("https://cg.example/group/", "crid://box/1", emptyList()))
+        assertEquals("https://cg.example/more?pid=p&type=ondemand&regionID%5B%5D=r%281%29",
+            GuideRequests.moreEpisodesUrl("https://cg.example/more", "p", listOf("r(1)")))
+    }
+
+    @Test
+    fun clause5_2_4_4_6ContextualParametersOnAnXmlAitUrl() {
+        assertEquals("https://channel7.co.uk/ait.aitx?pid=b01myjsy&regionID%5B%5D=Piemonte&lloc=epg",
+            GuideRequests.aitUrl("https://channel7.co.uk/ait.aitx?pid=b01myjsy", listOf("Piemonte"), "epg"))
+        assertEquals("https://channel7.co.uk/ait.aitx?lloc=epg", GuideRequests.aitUrl("https://channel7.co.uk/ait.aitx", emptyList(), "epg"))
+    }
 }

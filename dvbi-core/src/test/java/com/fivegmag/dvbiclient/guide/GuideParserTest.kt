@@ -112,6 +112,31 @@ class GuideParserTest {
     }
 
     @Test
+    fun clause6_7_3MoreEpisodesWithPaginationLinks() {
+        val r = GuideParser.parseResults(Fixtures.read("more-episodes.xml"))
+        assertEquals(3, r.items.size)
+        assertEquals("Episode 6", r.items[0].subtitle)
+        assertEquals("http://192.168.1.202:4100/img/6.png", r.items[0].image)
+        assertEquals("table 40, white space taken out", "http://192.168.1.202:4100/more?page=3", r.links["next"])
+        assertEquals(setOf("first", "prev", "next", "last"), r.links.keys)
+        val ordered = GuideParser.orderResults(r.items)
+        assertEquals("by MemberOf@index, the repeated programme once", listOf("crid://example.com/ep/5" to 5, "crid://example.com/ep/6" to 6),
+            ordered.map { it.programId to it.index })
+        assertEquals("http://192.168.1.202:4100/ait/ep5.aitx", ordered[0].onDemand?.programUrl)
+        assertNull(ordered[1].onDemand)
+    }
+
+    @Test
+    fun clause6_8_3_3BoxSetListsWithTemplateAit() {
+        val r = GuideParser.parseResults(Fixtures.read("box-set-lists.xml"))
+        assertEquals(listOf("Signals", "Coverage", ""), r.groups.map { it.title })
+        assertEquals("http://192.168.1.202:4100/ait/template.aitx", r.groups[0].templateAit)
+        assertEquals("http://192.168.1.202:4100/img/signals.png", r.groups[0].image)
+        assertNull(r.groups[1].templateAit)
+        assertEquals("clause 6.9: no links when all results fit one page", emptyMap<String, String>(), r.links)
+    }
+
+    @Test
     fun notAGuideResponseIsRefused() {
         try {
             GuideParser.parseSchedule("<ServiceList xmlns=\"urn:dvb:metadata:servicediscovery:2024\"/>")

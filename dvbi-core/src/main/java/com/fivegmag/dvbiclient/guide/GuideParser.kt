@@ -74,6 +74,36 @@ data class OnDemandProgram(
     fun availableAt(ms: Long): Boolean = (start == null || ms >= start) && (end == null || ms < end)
 }
 
+/** A programme of a More Episodes or Box Set Contents response (clauses 6.7.3, 6.8.4.3). */
+data class ResultItem(
+    val programId: String,
+    val title: String,
+    /** Title with @type secondary. */
+    val subtitle: String,
+    val synopsis: String,
+    val image: String?,
+    val ratings: List<ParentalRating>,
+    /** MemberOf@index, the position in the results (clause 6.7.3). */
+    val index: Int?,
+    val onDemand: OnDemandProgram?,
+)
+
+/** A group of a Box Set Categories or Box Set Lists response (clauses 6.8.2.3, 6.8.3.3, 6.10.17.2). */
+data class ResultGroup(
+    val groupId: String,
+    val title: String,
+    val image: String?,
+    /** The Template XML AIT of a Box Set (clause 5.2.4.4.4), RelatedMaterial with HowRelated templateAIT. */
+    val templateAit: String?,
+)
+
+/**
+ * A page of More Episodes or Box Set results. [links] are the pagination links of table 40 by their
+ * relative page name (first, prev, next, last): "the presence of these links shall be used to
+ * determine whether there are further pages of results available" (clause 6.9).
+ */
+data class Results(val items: List<ResultItem>, val groups: List<ResultGroup>, val links: Map<String, String>)
+
 /** A scheduled event joined with its programme information by CRID. */
 data class GuideEvent(val crid: String, val start: Long, val end: Long, val info: ProgrammeInfo?) {
     val title: String get() = info?.title?.ifEmpty { null } ?: crid
@@ -88,6 +118,12 @@ data class GuideEvent(val crid: String, val start: Long, val end: Long, val info
 object GuideParser {
 
     private const val PROMOTIONAL_STILL = "urn:tva:metadata:cs:HowRelatedCS:2012:19"
+
+    /** Table 40: HowRelated@href of the pagination links, before the relative page name. */
+    private const val PAGINATION = "urn:fvc:metadata:cs:HowRelatedCS:2015-12:pagination:"
+
+    /** HowRelated@href of a Box Set's Template XML AIT. */
+    private const val TEMPLATE_AIT = "urn:fvc:metadata:cs:HowRelatedCS:2018:templateAIT"
 
     private val STRUCTURAL = mapOf(
         "crid://dvb.org/metadata/schedules/now-next/now" to "now",
@@ -221,6 +257,68 @@ object GuideParser {
         val root = root(text)
         return root.descendants("ProgramInformation").firstOrNull { it.attr("programId") == pid }
             ?.let { parseInfo(it, groupTitles(root), onDemandPrograms(root)) }
+    }
+
+    private fun promotionalStill(bd: Element): String? = bd.children("RelatedMaterial")
+        .firstOrNull { it.child("HowRelated")?.attr("href") == PROMOTIONAL_STILL }
+        ?.descendant("MediaUri")?.text?.ifEmpty { null }
+
+    /**
+     * A More Episodes or Box Set response (clauses 6.7.3, 6.8.2.3, 6.8.3.3, 6.8.4.3): its programmes
+     * with their MemberOf@index and OnDemandProgram, its groups with their Template XML AIT, and the
+     * pagination links of table 40. Ported from the browser client (rt-dvb-i-application
+     * public/epg.js parseResults).
+     */
+    fun parseResults(text: String): Results {
+        val root = root(text)
+        val onDemand = onDemandPrograms(root)
+        val items = root.descendants("ProgramInformation").map { pi ->
+            val id = pi.attr("programId") ?: ""
+            val bd = pi.child("BasicDescription") ?: pi
+            val titles = bd.children("Title")
+            ResultItem(
+                programId = id,
+                title = (titles.firstOrNull { (it.attr("type") ?: "main") == "main" } ?: titles.firstOrNull())?.text?.ifEmpty { null } ?: id,
+                subtitle = titles.firstOrNull { it.attr("type") == "secondary" }?.text ?: "",
+                synopsis = bd.children("Synopsis").map { it.text }.maxByOrNull { it.length } ?: "",
+                image = promotionalStill(bd),
+                ratings = bd.children("ParentalGuidance").mapNotNull { pg ->
+                    val age = pg.descendant("MinimumAge")?.text?.toIntOrNull() ?: return@mapNotNull null
+                    ParentalRating(age, pg.childText("CountryCodes").split(',').map { it.trim() }.filter { it.isNotEmpty() })
+                },
+                index = pi.children("MemberOf").firstOrNull()?.attr("index")?.trim()?.toIntOrNull(),
+                onDemand = onDemand[id],
+            )
+        }
+        val links = LinkedHashMap<String, String>()
+        val groups = root.descendants("GroupInformation").map { gi ->
+            var templateAit: String? = null
+            for (rm in gi.descendants("RelatedMaterial")) {
+                val href = rm.child("HowRelated")?.attr("href") ?: ""
+                val uri = (rm.descendant("MediaUri")?.text ?: "").replace(Regex("\\s+"), "")
+                if (href.startsWith(PAGINATION) && uri.isNotEmpty()) links[href.removePrefix(PAGINATION)] = uri
+                if (href == TEMPLATE_AIT) templateAit = rm.descendant("AuxiliaryURI")?.text?.ifEmpty { null }
+            }
+            val bd = gi.child("BasicDescription") ?: gi
+            val titles = bd.children("Title")
+            ResultGroup(
+                groupId = gi.attr("groupId") ?: "",
+                title = (titles.firstOrNull { (it.attr("type") ?: "main") == "main" } ?: titles.firstOrNull())?.text ?: "",
+                image = promotionalStill(bd),
+                templateAit = templateAit,
+            )
+        }
+        return Results(items, groups, links)
+    }
+
+    /**
+     * Results in display order: "A DVB-I client shall display results in ascending order using the
+     * values from the MemberOf@index attribute." (clause 6.7.3); a programme already listed is
+     * dropped.
+     */
+    fun orderResults(items: List<ResultItem>): List<ResultItem> {
+        val seen = HashSet<String>()
+        return items.sortedBy { it.index ?: Int.MAX_VALUE }.filter { it.programId.isEmpty() || seen.add(it.programId) }
     }
 
     /** Now and next of [events] at [nowMs]: from the structural groups when present (clause 6.5.4.4), else by time. */

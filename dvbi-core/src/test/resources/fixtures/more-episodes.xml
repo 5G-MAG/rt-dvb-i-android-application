@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Jordi J. Gimenez (5G-MAG)
+Copyright: (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+
+A More Episodes response (clause 6.7.3) as the middle page of a paginated set (clause 6.9): programmes
+out of MemberOf@index order, one listed twice, one with its OnDemandProgram, and the results group with
+the four pagination links of table 40.
+-->
+<TVAMain xmlns="urn:tva:metadata:2024" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xml:lang="en">
+  <ProgramDescription>
+    <ProgramInformationTable>
+      <ProgramInformation programId="crid://example.com/ep/6">
+        <BasicDescription>
+          <Title type="main">Signals</Title>
+          <Title type="secondary">Episode 6</Title>
+          <RelatedMaterial>
+            <HowRelated href="urn:tva:metadata:cs:HowRelatedCS:2012:19"/>
+            <MediaLocator><MediaUri contentType="image/png">http://192.168.1.202:4100/img/6.png</MediaUri></MediaLocator>
+          </RelatedMaterial>
+        </BasicDescription>
+        <MemberOf xsi:type="MemberOfType" index="6" crid="crid://example.com/more-episodes/results"/>
+      </ProgramInformation>
+      <ProgramInformation programId="crid://example.com/ep/5">
+        <BasicDescription>
+          <Title type="main">Signals</Title>
+          <Title type="secondary">Episode 5</Title>
+          <Synopsis length="medium">The mast in winter.</Synopsis>
+        </BasicDescription>
+        <MemberOf xsi:type="MemberOfType" index="5" crid="crid://example.com/more-episodes/results"/>
+      </ProgramInformation>
+      <ProgramInformation programId="crid://example.com/ep/6">
+        <BasicDescription><Title type="main">Signals</Title></BasicDescription>
+        <MemberOf xsi:type="MemberOfType" index="7" crid="crid://example.com/more-episodes/results"/>
+      </ProgramInformation>
+    </ProgramInformationTable>
+    <GroupInformationTable>
+      <GroupInformation groupId="crid://example.com/more-episodes/results" ordered="true" numOfItems="40">
+        <GroupType xsi:type="ProgramGroupTypeType" value="otherCollection"/>
+        <BasicDescription>
+          <RelatedMaterial>
+            <HowRelated href="urn:fvc:metadata:cs:HowRelatedCS:2015-12:pagination:first"/>
+            <MediaLocator><MediaUri>http://192.168.1.202:4100/more?page=1</MediaUri></MediaLocator>
+          </RelatedMaterial>
+          <RelatedMaterial>
+            <HowRelated href="urn:fvc:metadata:cs:HowRelatedCS:2015-12:pagination:prev"/>
+            <MediaLocator><MediaUri>http://192.168.1.202:4100/more?page=1</MediaUri></MediaLocator>
+          </RelatedMaterial>
+          <RelatedMaterial>
+            <HowRelated href="urn:fvc:metadata:cs:HowRelatedCS:2015-12:pagination:next"/>
+            <MediaLocator><MediaUri>
+              http://192.168.1.202:4100/more?page=3
+            </MediaUri></MediaLocator>
+          </RelatedMaterial>
+          <RelatedMaterial>
+            <HowRelated href="urn:fvc:metadata:cs:HowRelatedCS:2015-12:pagination:last"/>
+            <MediaLocator><MediaUri>http://192.168.1.202:4100/more?page=3</MediaUri></MediaLocator>
+          </RelatedMaterial>
+        </BasicDescription>
+      </GroupInformation>
+    </GroupInformationTable>
+    <ProgramLocationTable>
+      <OnDemandProgram serviceIDRef="tag:sample,2024:service:a">
+        <Program crid="crid://example.com/ep/5"/>
+        <ProgramURL contentType="application/vnd.dvb.ait+xml">http://192.168.1.202:4100/ait/ep5.aitx</ProgramURL>
+        <AuxiliaryURL contentType="application/vnd.dvb.ait+xml">http://192.168.1.202:4100/ait/template.aitx</AuxiliaryURL>
+        <InstanceDescription/>
+        <PublishedDuration>PT30M</PublishedDuration>
+        <StartOfAvailability>2026-01-01T00:00:00Z</StartOfAvailability>
+        <EndOfAvailability>2027-01-01T00:00:00Z</EndOfAvailability>
+        <DeliveryMode>streaming</DeliveryMode>
+        <Free value="true"/>
+      </OnDemandProgram>
+    </ProgramLocationTable>
+  </ProgramDescription>
+</TVAMain>

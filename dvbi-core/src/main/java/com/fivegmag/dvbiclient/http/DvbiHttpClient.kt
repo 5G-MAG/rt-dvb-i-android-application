@@ -42,6 +42,10 @@ data class HttpResult(
     /** When the request may be sent again (ms since the epoch), or null. */
     val retryAt: Long? = null,
     val error: String? = null,
+    /** Cache-Control max-age of the response in ms (what is left of it when answered from the cache), or null. */
+    val maxAgeMs: Long? = null,
+    /** The Expires response header, or null. */
+    val expires: String? = null,
 )
 
 /**
@@ -96,7 +100,8 @@ class DvbiHttpClient(
 
         val cached = cache[url]
         if (cached != null && cached.expiresAt > now()) {
-            return HttpResult(ok = true, status = 200, body = cached.body, contentType = cached.contentType, fromCache = true, notModified = true)
+            return HttpResult(ok = true, status = 200, body = cached.body, contentType = cached.contentType, fromCache = true, notModified = true,
+                maxAgeMs = cached.expiresAt - now())
         }
 
         val headers = LinkedHashMap<String, String>()
@@ -119,14 +124,16 @@ class DvbiHttpClient(
             res.header("Last-Modified")?.let { cached.lastModified = it }
             res.header("ETag")?.let { cached.etag = it }
             state.remove(key)
-            return HttpResult(ok = true, status = 304, body = cached.body, contentType = cached.contentType, notModified = true)
+            return HttpResult(ok = true, status = 304, body = cached.body, contentType = cached.contentType, notModified = true,
+                maxAgeMs = maxAge, expires = res.header("Expires"))
         }
 
         val contentType = res.header("Content-Type") ?: ""
         if (res.status in 200..299) {
             cache[url] = Cached(res.body, contentType, res.header("Last-Modified"), res.header("ETag"), expiresAt)
             state.remove(key)
-            return HttpResult(ok = true, status = res.status, body = res.body, contentType = contentType)
+            return HttpResult(ok = true, status = res.status, body = res.body, contentType = contentType,
+                maxAgeMs = maxAge, expires = res.header("Expires"))
         }
 
         return when (res.status) {

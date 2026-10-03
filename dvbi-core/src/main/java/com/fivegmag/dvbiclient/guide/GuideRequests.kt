@@ -10,7 +10,8 @@ https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
 package com.fivegmag.dvbiclient.guide
 
 /**
- * Content guide request URLs of ETSI TS 103 770 V1.2.1 clauses 6.5 and 6.6, encoded as clause 6.2.2
+ * Content guide request URLs of ETSI TS 103 770 V1.2.1 clauses 6.5 to 6.8, and the contextual
+ * parameters of an XML AIT request (clause 5.2.4.4.6), encoded as clause 6.2.2
  * says. Ported from the browser client (rt-dvb-i-application public/guide.js).
  */
 object GuideRequests {
@@ -80,4 +81,34 @@ object GuideRequests {
 
     /** Clause 6.6.2: <ProgramInfoEndpoint>?pid=<program_id> */
     fun programUrl(endpoint: String, pid: String): String = withQuery(endpoint, listOf("pid" to pid))
+
+    private fun regionPairs(regions: List<String>) = regions.map { "regionID[]" to it }
+    private fun sidPairs(sids: List<String>) = sids.map { "sid[]" to it }
+
+    /** Clause 6.7.2: <MoreEpisodesEndpoint>?pid=<program_id>&type=ondemand&regionID[]=... */
+    fun moreEpisodesUrl(endpoint: String, pid: String, regions: List<String>): String =
+        withQuery(endpoint, listOf("pid" to pid, "type" to "ondemand") + regionPairs(regions))
+
+    /** Clause 6.8.2.2: <GroupInfoEndpoint>categories?sid[]=...&regionID[]=... */
+    fun boxSetCategoriesUrl(groupEndpoint: String, sids: List<String>, regions: List<String>): String =
+        withQuery("${groupEndpoint}categories", sidPairs(sids) + regionPairs(regions))
+
+    /** Clause 6.8.3.2: <GroupInfoEndpoint>?groupId=<group_id>&sid[]=...&regionID[]=... */
+    fun boxSetListsUrl(groupEndpoint: String, groupId: String, sids: List<String>, regions: List<String>): String =
+        withQuery(groupEndpoint, listOf<Pair<String, String?>>("groupId" to groupId) + sidPairs(sids) + regionPairs(regions))
+
+    /**
+     * Clause 6.8.4.2: <GroupInfoEndpoint>contents?groupId=<group_id>&format=...&regionID[]=...; the
+     * paginated format is asked for, since this client pages (clause 6.9).
+     */
+    fun boxSetContentsUrl(groupEndpoint: String, groupId: String, regions: List<String>): String =
+        withQuery("${groupEndpoint}contents", listOf<Pair<String, String?>>("groupId" to groupId, "format" to "paginated") + regionPairs(regions))
+
+    /**
+     * Clause 5.2.4.4.6: "Client devices shall append all of the following parameters to the XML AIT
+     * URL provided in the metadata before attempting to retrieve the document": the regionID values
+     * of the device and the UI location the application is launched from.
+     */
+    fun aitUrl(url: String, regions: List<String>, launchLocation: String): String =
+        withQuery(url, regionPairs(regions) + listOf("lloc" to launchLocation))
 }
