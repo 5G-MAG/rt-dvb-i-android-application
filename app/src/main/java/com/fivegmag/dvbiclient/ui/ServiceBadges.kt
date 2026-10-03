@@ -40,7 +40,7 @@ data class Badge(
     @ColorRes val color: Int,
     val description: String,
 ) {
-    enum class Kind { LIVE, ON_DEMAND, FIVE_G, FIVE_G_BAD, AGE, PROGRAMME_AGE, AUDIO_DESCRIPTION, SUBTITLES, HARD_OF_HEARING, SIGNING,
+    enum class Kind { LIVE, ON_DEMAND, FIVE_G_MS, FIVE_G, FIVE_G_BAD, AGE, PROGRAMME_AGE, AUDIO_DESCRIPTION, SUBTITLES, HARD_OF_HEARING, SIGNING,
         DIALOGUE_ENHANCEMENT, SPOKEN_SUBTITLES, SUBSCRIPTION, CONDITIONAL_ACCESS, DRM, REGION, OFF_AIR,
         BROADCAST_ONLY, MULTICAST_ONLY, DASH, HLS, GUIDE, RESTRICTED }
 }
@@ -153,6 +153,10 @@ object ServiceBadges {
         return out
     }
 
+    /** The 5GMS badge, shown in the player only while the variant's adapter reports a 5GMS session. */
+    fun fiveGms(): Badge = Badge(Badge.Kind.FIVE_G_MS, R.drawable.ic_stream, null, R.color.badge_5g_ok,
+        "5G Media Streaming: this session is delivered through 5GMS")
+
     /** Every badge with what it means in general, for the legend of the About screen. */
     fun legend(): List<Badge> = listOf(
         Badge(Badge.Kind.LIVE, null, "LIVE", R.color.flix_red, "The programme on now of a linear service (ServiceTypeCS linear or linear-radio)"),
@@ -160,7 +164,8 @@ object ServiceBadges {
         Badge(Badge.Kind.AGE, null, "12+", R.color.badge_age, "Minimum parental age rating of the service (ParentalRating, clause 5.5.28)"),
         Badge(Badge.Kind.PROGRAMME_AGE, null, "16+", R.color.badge_age, "Minimum age rating of the programme on now, from the content guide (clause 6.10.15); it takes precedence over the service's"),
         Badge(Badge.Kind.RESTRICTED, R.drawable.ic_lock, null, R.color.badge_off, "Restricted by your parental setting"),
-        Badge(Badge.Kind.FIVE_G, R.drawable.ic_cell_tower, null, R.color.badge_5g_ok, "5G Broadcast instance (an mbms:// locator, clause 9.3.3)"),
+        Badge(Badge.Kind.FIVE_G, R.drawable.ic_cell_tower, null, R.color.badge_5g_ok, "5G Broadcast: an instance with an mbms:// locator (clause 9.3.3); reception needs an MBMS Client, not available yet"),
+        Badge(Badge.Kind.FIVE_G_MS, R.drawable.ic_stream, null, R.color.badge_5g_ok, "5G Media Streaming: the session is delivered through 5GMS (the 5G Media Streaming variant; not available yet)"),
         Badge(Badge.Kind.FIVE_G_BAD, R.drawable.ic_cell_tower, null, R.color.badge_5g_bad, "5G Broadcast signalling is wrong: the locator is not a valid MBMS URL (3GPP TS 26.347 clause 8.2.2)"),
         Badge(Badge.Kind.AUDIO_DESCRIPTION, R.drawable.ic_audio_description, null, R.color.badge_access, "Audio description (clause 4.5.2.4)"),
         Badge(Badge.Kind.SUBTITLES, R.drawable.ic_subtitles, null, R.color.badge_subtitles, "Subtitles, with their language, purpose and carriage (clause 4.5.2.3)"),

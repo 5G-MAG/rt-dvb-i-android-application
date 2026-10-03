@@ -16,7 +16,13 @@ import com.fivegmag.dvbiclient.mbms.NoMbmsClient
 object Role {
     const val NAME = "DVB-I client"
 
+    /** Shown in About so that the build is identifiable; null for the plain DVB-I client. */
+    val VARIANT_LABEL: String? = null
+
     fun mbmsClient(): IMbmsStreamingClient = NoMbmsClient
+
+    /** Whether the playing session runs through 5GMS (the 5GMS badge). */
+    fun fiveGmsSession(): Boolean = false
 
     fun status(): String = "no MBMS Client, no 5GMS client"
 }

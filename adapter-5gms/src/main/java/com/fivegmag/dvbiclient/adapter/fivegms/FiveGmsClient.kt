@@ -21,4 +21,7 @@ package com.fivegmag.dvbiclient.adapter.fivegms
  */
 object FiveGmsClient {
     const val STATUS = "5GMS adapter not implemented: no 5GMS library is linked, and DVB-I carries no 5GMS Service Access Information"
+
+    /** Whether the playing session runs through 5GMS; the app's 5GMS badge shows it. Always false until a session is started here. */
+    fun sessionActive(): Boolean = false
 }

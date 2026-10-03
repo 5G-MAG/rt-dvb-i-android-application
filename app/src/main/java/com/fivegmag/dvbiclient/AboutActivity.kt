@@ -47,7 +47,7 @@ class AboutActivity : AppCompatActivity() {
             }
         }
         findViewById<TextView>(R.id.versionNumberView).text =
-            getString(R.string.version_text_field, BuildConfig.VERSION_NAME) + " · " + Role.NAME
+            getString(R.string.version_text_field, BuildConfig.VERSION_NAME) + " · " + (Role.VARIANT_LABEL ?: Role.NAME)
         findViewById<TextView>(R.id.descriptionText).text = getString(R.string.description_text)
 
         val project = findViewById<LinearLayout>(R.id.projectLinks)

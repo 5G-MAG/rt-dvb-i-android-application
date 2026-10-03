@@ -148,9 +148,9 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun showBadges(service: Service) {
-        ServiceBadges.bind(findViewById<ChipGroup>(R.id.badges), ServiceBadges.of(
-            service, serviceAge, programmeAge, settings.parentalThreshold, DvbiSession.mbmsRegistered,
-        ).filter { it.kind != Badge.Kind.RESTRICTED })
+        val badges = ServiceBadges.of(service, serviceAge, programmeAge, settings.parentalThreshold, DvbiSession.mbmsRegistered)
+            .filter { it.kind != Badge.Kind.RESTRICTED }
+        ServiceBadges.bind(findViewById<ChipGroup>(R.id.badges), if (Role.fiveGmsSession()) listOf(ServiceBadges.fiveGms()) + badges else badges)
     }
 
     // Fullscreen from the player's button, or by turning the phone: the player fills the screen and
