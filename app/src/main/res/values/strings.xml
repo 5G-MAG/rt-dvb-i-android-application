@@ -134,4 +134,9 @@
     <string name="programme_unavailable">This programme is not available</string>
     <string name="restricted_programme">Blocked by your parental setting: rated %d+</string>
     <string name="close_application">Close the application</string>
+
+    <!-- Linked applications and playlists -->
+    <string name="open_application">Open the application</string>
+    <string name="application_unavailable">Application unavailable</string>
+    <string name="content_finished">Content finished</string>
 </resources>

@@ -23,6 +23,7 @@ import com.fivegmag.dvbiclient.mbms.MbmsUrl
 import com.fivegmag.dvbiclient.servicelist.AccessServices
 import com.fivegmag.dvbiclient.servicelist.Delivery
 import com.fivegmag.dvbiclient.servicelist.Instances
+import com.fivegmag.dvbiclient.servicelist.LinkedApps
 import com.fivegmag.dvbiclient.servicelist.Service
 import com.fivegmag.dvbiclient.servicelist.ServiceListRules
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -40,7 +41,7 @@ data class Badge(
     @ColorRes val color: Int,
     val description: String,
 ) {
-    enum class Kind { LIVE, ON_DEMAND, FIVE_G_MS, FIVE_G, FIVE_G_BAD, AGE, PROGRAMME_AGE, AUDIO_DESCRIPTION, SUBTITLES, HARD_OF_HEARING, SIGNING,
+    enum class Kind { LIVE, ON_DEMAND, LINKED_APP, FIVE_G_MS, FIVE_G, FIVE_G_BAD, AGE, PROGRAMME_AGE, AUDIO_DESCRIPTION, SUBTITLES, HARD_OF_HEARING, SIGNING,
         DIALOGUE_ENHANCEMENT, SPOKEN_SUBTITLES, SUBSCRIPTION, CONDITIONAL_ACCESS, DRM, REGION, OFF_AIR,
         BROADCAST_ONLY, MULTICAST_ONLY, DASH, HLS, GUIDE, RESTRICTED }
 }
@@ -148,6 +149,11 @@ object ServiceBadges {
             out += Badge(Badge.Kind.OFF_AIR, R.drawable.ic_tv_off, null, R.color.badge_off, "Service currently off-air")
         }
 
+        // Linked applications this client can start (clause 5.2.3, table 7).
+        val apps = (service.linkedApps + instances.flatMap { it.linkedApps }).filter { it.startable }.map { it.term }.distinct()
+        if (apps.isNotEmpty()) out += Badge(Badge.Kind.LINKED_APP, R.drawable.ic_apps, null, R.color.badge_subtitles,
+            "Linked application: " + apps.joinToString(", ") { appTerm(it) })
+
         if (service.guide != null) out += Badge(Badge.Kind.GUIDE, R.drawable.ic_event_note, null, R.color.badge_neutral,
             "Content guide available")
         return out
@@ -182,8 +188,18 @@ object ServiceBadges {
         Badge(Badge.Kind.DRM, R.drawable.ic_key, null, R.color.badge_age, "Content protection with DRM systems (clause 5.5.20)"),
         Badge(Badge.Kind.REGION, R.drawable.ic_location_on, null, R.color.badge_neutral, "Restricted to target regions (TargetRegion, table 15)"),
         Badge(Badge.Kind.OFF_AIR, R.drawable.ic_tv_off, null, R.color.badge_off, "Off-air: no instance is within its scheduled service hours (clause 5.2.5.2)"),
+        Badge(Badge.Kind.LINKED_APP, R.drawable.ic_apps, null, R.color.badge_subtitles, "Linked application this client can open: with media in parallel, controlling media presentation, for outside the availability period, or the home page (clause 5.2.3)"),
         Badge(Badge.Kind.GUIDE, R.drawable.ic_event_note, null, R.color.badge_neutral, "Content guide available (clause 6)"),
     )
+
+    // The names of the LinkedApplicationCS:2019 terms (DVBLinkedApplicationCS-2019.xml, annex D.2).
+    private fun appTerm(term: String): String = when (term) {
+        LinkedApps.WITH_MEDIA -> "app with media in parallel"
+        LinkedApps.CONTROLLING -> "app controlling media presentation"
+        LinkedApps.OUTSIDE_AVAILABILITY -> "app for outside availability period"
+        LinkedApps.HOME_PAGE -> "the service provider's home page"
+        else -> term
+    }
 
     private fun languages(list: List<String>): String {
         val l = list.filter { it.isNotEmpty() }.distinct()

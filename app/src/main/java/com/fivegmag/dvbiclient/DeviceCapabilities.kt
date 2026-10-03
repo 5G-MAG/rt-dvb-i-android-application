@@ -27,12 +27,16 @@ object DeviceCapabilities {
         }
     }
 
-    /** Media3 plays DASH and HLS; DRM systems are those the device's MediaDrm supports. */
+    /** Media3 plays DASH, HLS and DASH playlists; DRM systems are those the device's MediaDrm supports. */
     fun current(packages: List<String>): Instances.Capabilities = Instances.Capabilities(
         dash = true,
         hls = true,
         drmSupported = { id -> drmUuid(id)?.let { MediaDrm.isCryptoSchemeSupported(it) } ?: false },
         packages = packages,
         mbms = DvbiSession.mbmsRegistered,
+        // AppActivity is the linked application engine for HTML pages (clause 5.2.13, NOTE 1 i)),
+        // and the player plays DVB-I Playlists (clause 5.2.7.2).
+        applications = true,
+        playlists = true,
     )
 }

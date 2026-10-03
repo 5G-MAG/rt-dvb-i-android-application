@@ -52,8 +52,12 @@ import com.fivegmag.dvbiclient.servicelist.Delivery
 import com.fivegmag.dvbiclient.servicelist.Service
 import com.fivegmag.dvbiclient.servicelist.ServiceInstance
 import com.fivegmag.dvbiclient.servicelist.ServiceListRules
+import com.fivegmag.dvbiclient.servicelist.LinkedApps
+import com.fivegmag.dvbiclient.servicelist.Playlists
 import com.fivegmag.dvbiclient.servicelist.ServiceSelection
 import com.fivegmag.dvbiclient.ui.Badge
+import com.fivegmag.dvbiclient.ui.LinkedApplication
+import com.fivegmag.dvbiclient.ui.OnDemand
 import com.fivegmag.dvbiclient.ui.ServiceBadges
 import com.fivegmag.dvbiclient.ui.ServiceTypes
 
@@ -81,6 +85,7 @@ class PlayerActivity : AppCompatActivity() {
     private var serviceAge: Int? = null
     private var programmeAge: Int? = null
     private var fullscreen = false
+    private var contentFinished: com.fivegmag.dvbiclient.servicelist.Image? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -279,6 +284,10 @@ class PlayerActivity : AppCompatActivity() {
             override fun onPlayerError(error: PlaybackException) {
                 onInstanceFailed(error)
             }
+
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_ENDED) showContentFinished()
+            }
         })
         playerView.player = exo
         player = exo
@@ -325,9 +334,12 @@ class PlayerActivity : AppCompatActivity() {
         current = index
         showDiscarded(sel, now)
         scheduleReevaluation(sel, now)
+        findViewById<View>(R.id.contentFinishedImage).visibility = View.GONE
+        contentFinished = null
         if (index == null) {
             exo.stop()
             instanceText.text = getString(R.string.no_playable_instance)
+            showLinkedApp(sel.service, null)
             return
         }
         val inst = sel.service.instances[index]
@@ -336,7 +348,75 @@ class PlayerActivity : AppCompatActivity() {
             is Delivery.Dash -> start(exo, d.url, MimeTypes.APPLICATION_MPD, inst)
             is Delivery.Hls -> start(exo, d.url, MimeTypes.APPLICATION_M3U8, inst)
             is Delivery.Mbms -> startMbms(exo, d, inst)
+            is Delivery.DashPlaylist -> startPlaylist(exo, d, inst)
+            is Delivery.ControllingApplication -> startControllingApplication(exo, d)
             else -> play(sel.fail(index, now))
+        }
+        showLinkedApp(sel.service, inst)
+    }
+
+    // Clause 5.2.3.2: "media presentation is to be managed by the linked application and no media
+    // stream shall be presented by the DVB-I client when the service is selected". The application
+    // takes the screen; if it cannot be had, the next instance is tried.
+    private fun startControllingApplication(exo: ExoPlayer, d: Delivery.ControllingApplication) {
+        exo.stop()
+        val regions = OnDemand.regions(settings)
+        DvbiRepository.background({ LinkedApplication.resolve(d.url, d.contentType, LinkedApps.CONTROLLING, regions) }) { url ->
+            if (isFinishing || isDestroyed) return@background
+            if (url == null) {
+                onInstanceFailed(null)
+            } else {
+                startActivity(AppActivity.intent(this, url))
+                finish()
+            }
+        }
+    }
+
+    // A DVB-I Playlist from a playlist server (clause 5.2.7.2), its PlaylistEntry MPDs played in
+    // order (table 39); the playlist server is a DVB-I endpoint (clause 4.3.1).
+    private fun startPlaylist(exo: ExoPlayer, d: Delivery.DashPlaylist, inst: ServiceInstance) {
+        DvbiRepository.background({
+            val r = DvbiRepository.http.get(d.url)
+            if (!r.ok) null else runCatching { Playlists.parse(r.body) }.getOrNull()
+        }) { entries ->
+            if (player !== exo || current == null) return@background
+            if (entries.isNullOrEmpty()) {
+                onInstanceFailed(null)
+                return@background
+            }
+            exo.setMediaItems(entries.map { MediaItem.Builder().setUri(it).setMimeType(MimeTypes.APPLICATION_MPD).build() })
+            exo.prepare()
+            exo.playWhenReady = true
+            contentFinished = inst.contentFinished
+        }
+    }
+
+    // Clause 5.2.7.3: "When the DVB-I client has played out the VoD MPD or all of the items in the
+    // playlist, it should present a Content Finished image if one is signalled."
+    private fun showContentFinished() {
+        val image = contentFinished ?: return
+        findViewById<ImageView>(R.id.contentFinishedImage).also {
+            it.visibility = View.VISIBLE
+            it.load(image.url)
+        }
+    }
+
+    // The linked application the player offers (clauses 5.2.3.1, 5.2.3.2), resolved before the
+    // button shows; one with no application this client can start is shown as unavailable, "the
+    // client shall not issue an error to the user but instead shall show a service or content item
+    // as unavailable" (clause 5.2.4.2).
+    private fun showLinkedApp(service: Service, playing: ServiceInstance?) {
+        val button = findViewById<Button>(R.id.appButton)
+        val app = LinkedApplication.offered(service, playing)
+        button.visibility = View.GONE
+        if (app == null) return
+        val regions = OnDemand.regions(settings)
+        DvbiRepository.background({ LinkedApplication.resolve(app.url, app.contentType, app.term, regions) }) { url ->
+            if (isFinishing || isDestroyed) return@background
+            button.visibility = View.VISIBLE
+            button.isEnabled = url != null
+            button.text = getString(if (url != null) R.string.open_application else R.string.application_unavailable)
+            button.setOnClickListener { url?.let { startActivity(AppActivity.intent(this, it)) } }
         }
     }
 
@@ -411,6 +491,8 @@ class PlayerActivity : AppCompatActivity() {
         is Delivery.Dash -> "DASH: ${d.url}"
         is Delivery.Hls -> "HLS (${d.signalledBy}): ${d.url}"
         is Delivery.Mbms -> "5G Broadcast: ${d.locator}"
+        is Delivery.DashPlaylist -> "DVB-I Playlist (DASH): ${d.url}"
+        is Delivery.ControllingApplication -> "Application controlling media presentation (${d.contentType}): ${d.url}"
         else -> d.toString()
     }
 
