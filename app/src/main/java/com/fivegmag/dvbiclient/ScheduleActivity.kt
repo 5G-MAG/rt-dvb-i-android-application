@@ -17,7 +17,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.fivegmag.dvbiclient.guide.GuideEvent
 import com.fivegmag.dvbiclient.http.ServiceListFetch
 import com.fivegmag.dvbiclient.ui.ProgrammeSheet
 import com.fivegmag.dvbiclient.ui.ScheduleAdapter
@@ -60,20 +59,10 @@ class ScheduleActivity : AppCompatActivity() {
             }
             status.text = if (evs.isEmpty()) "No events in the schedule." else "${evs.size} events"
             val adapter = ScheduleAdapter(evs, ServiceTypes.isLinear(service.serviceType), System.currentTimeMillis()) { e ->
-                showProgramme(service, e)
+                ProgrammeSheet.request(this, service, e)
             }
             listView.adapter = adapter
             adapter.positionOfNow()?.let { (listView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(it, 0) }
-        }
-    }
-
-    // Clause 6.6.2, <ProgramInfoEndpoint>?pid=<program_id>; what the schedule carried when the
-    // service has no ProgramInfoEndpoint or the request fails.
-    private fun showProgramme(service: com.fivegmag.dvbiclient.servicelist.Service, e: GuideEvent) {
-        DvbiRepository.background({ DvbiRepository.guide.programme(service, e.crid) }) { r ->
-            val info = r.value ?: e.info
-            val fallback = r.value == null && service.guide?.program != null
-            ProgrammeSheet.show(this, service, e, info, Settings(this).country.ifEmpty { null }, fallback)
         }
     }
 

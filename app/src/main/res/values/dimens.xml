@@ -10,4 +10,9 @@ https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
 <resources>
     <dimen name="card_focus_stroke">2dp</dimen>
     <dimen name="dialog_padding">24dp</dimen>
+    <!-- Programme guide grid -->
+    <dimen name="guide_channel_width">96dp</dimen>
+    <dimen name="guide_row_height">68dp</dimen>
+    <dimen name="guide_ruler_height">32dp</dimen>
+    <dimen name="guide_dp_per_minute">4dp</dimen>
 </resources>

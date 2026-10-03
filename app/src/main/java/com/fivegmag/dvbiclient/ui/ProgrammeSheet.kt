@@ -15,7 +15,9 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import coil.load
+import com.fivegmag.dvbiclient.DvbiRepository
 import com.fivegmag.dvbiclient.R
+import com.fivegmag.dvbiclient.Settings
 import com.fivegmag.dvbiclient.guide.GuideEvent
 import com.fivegmag.dvbiclient.guide.ProgrammeInfo
 import com.fivegmag.dvbiclient.servicelist.Service
@@ -31,6 +33,20 @@ import java.util.Date
  * image, title, times, genre, minimum age (clause 6.10.15) and synopsis.
  */
 object ProgrammeSheet {
+
+    /**
+     * Requests the programme information of [event] (clause 6.6.2, <ProgramInfoEndpoint>?pid=<program_id>)
+     * and shows it; what the schedule carried when the service has no ProgramInfoEndpoint or the
+     * request fails.
+     */
+    fun request(activity: Activity, service: Service, event: GuideEvent) {
+        DvbiRepository.background({ DvbiRepository.guide.programme(service, event.crid) }) { r ->
+            if (activity.isFinishing || activity.isDestroyed) return@background
+            val info = r.value ?: event.info
+            val fallback = r.value == null && service.guide?.program != null
+            show(activity, service, event, info, Settings(activity).country.ifEmpty { null }, fallback)
+        }
+    }
 
     /**
      * Shows [info] for [event] of [service]. [fallback] says the programme information request
@@ -50,6 +66,15 @@ object ProgrammeSheet {
             }
         }
         view.findViewById<TextView>(R.id.programmeTitle).text = info?.title?.ifEmpty { null } ?: event.title
+        // The secondary title and the groups the programme belongs to, with its position (table 41).
+        view.findViewById<TextView>(R.id.programmeEpisode).also {
+            val lines = listOfNotNull(info?.secondaryTitle) + (info?.memberOf ?: emptyList()).mapNotNull { m ->
+                val title = m.groupTitle ?: return@mapNotNull null
+                if (m.index != null) activity.getString(R.string.member_of_index, m.index, title) else title
+            }
+            it.text = lines.joinToString("\n")
+            it.visibility = if (lines.isEmpty()) View.GONE else View.VISIBLE
+        }
         view.findViewById<TextView>(R.id.programmeTime).text =
             "${fmt.format(Date(event.start))} to ${fmt.format(Date(event.end))} · " + activity.getString(R.string.minutes, minutes)
         val age = info?.let { ServiceListRules.minimumAgeFor(it.ratings, country) }
@@ -60,6 +85,11 @@ object ProgrammeSheet {
         val synopsis = info?.synopsis ?: ""
         view.findViewById<TextView>(R.id.programmeSynopsis).text = synopsis
         view.findViewById<View>(R.id.programmeSynopsisHeading).visibility = if (synopsis.isEmpty()) View.GONE else View.VISIBLE
+        view.findViewById<TextView>(R.id.programmeKeywords).also {
+            val k = info?.keywords ?: emptyList()
+            it.text = activity.getString(R.string.keywords, k.joinToString(", "))
+            it.visibility = if (k.isEmpty()) View.GONE else View.VISIBLE
+        }
         view.findViewById<TextView>(R.id.programmeNote).also {
             if (fallback) {
                 it.visibility = View.VISIBLE

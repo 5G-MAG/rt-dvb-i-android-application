@@ -114,4 +114,11 @@
     <string name="contributors_label">Contributors</string>
     <string name="authors_url">https://github.com/5G-MAG/rt-dvb-i-android-application/graphs/contributors</string>
     <string name="open_source_intro">This app is built with these open-source components. Tap one to open its project.</string>
+
+    <!-- Programme guide -->
+    <string name="guide">Programme guide</string>
+    <string name="guide_no_data">No content guide data</string>
+    <string name="guide_none">No service of this list has a content guide.</string>
+    <string name="member_of_index">No. %1$d in %2$s</string>
+    <string name="keywords">Keywords: %s</string>
 </resources>

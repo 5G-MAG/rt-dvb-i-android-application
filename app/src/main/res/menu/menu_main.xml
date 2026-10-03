@@ -11,9 +11,9 @@ Derived from rt-5gms-application fivegmag_5GMSdAwareApplication (5G-MAGflix) res
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_channel_number"
-        android:icon="@drawable/ic_dialpad"
-        android:title="@string/channel_number_hint"
+        android:id="@+id/action_guide"
+        android:icon="@drawable/ic_view_timeline"
+        android:title="@string/guide"
         app:iconTint="@color/on_surface_primary"
         app:showAsAction="ifRoom" />
     <item
@@ -22,6 +22,11 @@ Derived from rt-5gms-application fivegmag_5GMSdAwareApplication (5G-MAGflix) res
         android:title="@string/settings"
         app:iconTint="@color/on_surface_primary"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_channel_number"
+        android:icon="@drawable/ic_dialpad"
+        android:title="@string/channel_number_hint"
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_reload"
         android:title="@string/reload"
