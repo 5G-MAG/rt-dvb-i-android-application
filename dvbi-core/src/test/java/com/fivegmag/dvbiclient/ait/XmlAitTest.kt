@@ -37,6 +37,18 @@ class XmlAitTest {
     }
 
     @Test
+    fun clause5_2_4_2PriorityIsHexadecimal() {
+        val doc = Fixtures.read("xml-ait.xml")
+            .replace("<mhp:priority>1</mhp:priority>", "<mhp:priority>0a</mhp:priority>")
+            .replace("<mhp:priority>3</mhp:priority>", "<mhp:priority>9</mhp:priority>")
+        val parsed = XmlAit.parse(doc)
+        assertEquals("0a is ten", 10, parsed[1].priority)
+        assertEquals("the highest mhp:priority value: 0a above 9", "http://192.168.1.202:4100/low.html", XmlAit.select(parsed)?.url)
+        assertEquals("10 is sixteen", 16, XmlAit.parse(doc.replace("<mhp:priority>0a</mhp:priority>", "<mhp:priority>10</mhp:priority>"))[1].priority)
+        assertEquals("FF", 255, XmlAit.parse(doc.replace("<mhp:priority>0a</mhp:priority>", "<mhp:priority>FF</mhp:priority>"))[1].priority)
+    }
+
+    @Test
     fun clause5_2_4_2PlatformProfileOfTs102796Table5() {
         assertEquals("hexadecimal fields, leading zeros allowed", MhpVersion(0, 1, 1, 1), apps[1].mhpVersion)
         assertEquals("versionMinor 0a is ten", MhpVersion(0, 1, 10, 1), apps[7].mhpVersion)

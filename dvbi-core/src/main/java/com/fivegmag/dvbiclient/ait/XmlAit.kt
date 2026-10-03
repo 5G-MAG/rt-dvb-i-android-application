@@ -68,7 +68,8 @@ object XmlAit {
         return root.descendants("Application").map { a ->
             AitApplication(
                 type = a.descendant("OtherApp")?.text ?: "",
-                priority = a.descendant("priority")?.text?.toIntOrNull() ?: 0,
+                // mis_xmlait.xsd ApplicationDescriptor: priority is ipi:Hexadecimal8bit.
+                priority = a.descendant("priority")?.text?.let { hex(it, 2) } ?: 0,
                 // Clause 5.2.4.3: "the concatenation of URLBase and applicationLocation shall form a URL"
                 url = (a.descendant("URLBase")?.text ?: "") + (a.descendant("applicationLocation")?.text ?: ""),
                 mhpVersion = a.descendant("mhpVersion")?.let { v ->
