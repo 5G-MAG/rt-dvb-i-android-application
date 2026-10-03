@@ -9,10 +9,13 @@ https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
 
 package com.fivegmag.dvbiclient
 
+import android.app.Activity
 import android.app.Application
+import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import com.fivegmag.dvbiclient.mbms.IMbmsStreamingClient
+import com.fivegmag.dvbiclient.mbms.MbmsSession
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import com.fivegmag.dvbiclient.http.OkHttpTransport
@@ -28,24 +31,26 @@ class App : Application(), ImageLoaderFactory {
         // The user interface is dark only, as 5G-MAGflix's.
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         // The MBMS Client comes from the build variant's role (src/<flavor>/.../Role.kt).
-        DvbiSession.mbmsClient = Role.mbmsClient()
+        // TS 103 770 V1.2.1 clause 9.3.3: the DVB-I client acts as an MBMS-Aware Application. It
+        // registers when its first activity opens and deregisters when the last one closes
+        // (MbmsSession); the registration result says whether 5G Broadcast instances can be received.
+        DvbiSession.mbms = MbmsSession(Role.mbmsClient(), packageName, listOf(IMbmsStreamingClient.DVBI_SERVICE_INSTANCE_CLASS))
         Log.i(TAG_APP, "${Role.NAME}: ${Role.status()}")
-        // TS 103 770 V1.2.1 clause 9.3.3: the DVB-I client acts as an MBMS-Aware Application. The
-        // registration result says whether 5G Broadcast instances can be received.
-        DvbiSession.mbmsClient.registerStreamingApp(
-            packageName,
-            listOf(IMbmsStreamingClient.DVBI_SERVICE_INSTANCE_CLASS),
-            object : IMbmsStreamingClient.Callback {
-                override fun registerStreamingResponse(success: Boolean, message: String) {
-                    DvbiSession.mbmsRegistered = success
-                    if (!success) Log.i(TAG_APP, "MBMS Client: $message")
-                }
+        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                DvbiSession.mbms.viewOpened { success, message -> if (!success) Log.i(TAG_APP, "MBMS Client: $message") }
+            }
 
-                override fun streamingServiceListUpdate() {}
-                override fun serviceStarted(serviceId: String) {}
-                override fun streamingServiceError(serviceId: String, message: String) {}
-            },
-        )
+            override fun onActivityDestroyed(activity: Activity) {
+                DvbiSession.mbms.viewClosed(activity.isChangingConfigurations)
+            }
+
+            override fun onActivityStarted(activity: Activity) {}
+            override fun onActivityResumed(activity: Activity) {}
+            override fun onActivityPaused(activity: Activity) {}
+            override fun onActivityStopped(activity: Activity) {}
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+        })
     }
 
     override fun newImageLoader(): ImageLoader {

@@ -279,14 +279,17 @@ names of the annex B.3 IDL) this client calls: `registerStreamingApp`, `getStrea
 `registerStreamingResponse`, `serviceStarted`, `streamingServiceError` and `streamingServiceListUpdate`. The
 client registers with the service class of TS 103 770 table 106, `urn:dvb:metadata:serviceClass:DVB-I_Service_Instance:1`.
 `NoMbmsClient` refuses the registration, so 5G Broadcast instances are discarded and another instance plays.
-An Android MBMS Client implements the interface and is installed in `DvbiSession.mbmsClient` by the variant's
-`Role` (`app/src/<variant>/`); the player then starts the User Service whose `serviceId` is the locator's
-prefix and plays its `ManifestURI`. In the `dvbiMbms` variant that client is `adapter-mbms`, which answers as
+An Android MBMS Client implements the interface and is supplied by the variant's `Role`
+(`app/src/<variant>/`) to `MbmsSession` (`DvbiSession.mbms`), which registers once when the first activity
+opens, reads the service list after the registration response and after each `streamingServiceListUpdate`,
+stops the started service when another instance plays or the player is left, and deregisters when the last
+activity closes. The player starts the User Service whose `serviceId` is the locator's prefix and plays its
+`ManifestURI`. In the `dvbiMbms` variant that client is `adapter-mbms`, which answers as
 `NoMbmsClient` for now: the MBMS Middleware's MwService does not yet offer an interface to bind to (see
 [adapter-mbms/README.md](adapter-mbms/README.md)).
 
-`DvbiSession` and the activities are in `app`; the interface, `NoMbmsClient`, the locator check and the
-choice of entry point (`MbmsReception`) are in `dvbi-core`, so an MBMS Client is supplied without
+`DvbiSession` and the activities are in `app`; the interface, `NoMbmsClient`, `MbmsSession`, the locator
+check and the choice of entry point (`MbmsReception`) are in `dvbi-core`, so an MBMS Client is supplied without
 changing either module's DVB-I logic.
 
 ## 5G Media Streaming

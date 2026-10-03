@@ -10,6 +10,7 @@ https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
 package com.fivegmag.dvbiclient
 
 import com.fivegmag.dvbiclient.mbms.IMbmsStreamingClient
+import com.fivegmag.dvbiclient.mbms.MbmsSession
 import com.fivegmag.dvbiclient.mbms.NoMbmsClient
 import com.fivegmag.dvbiclient.servicelist.ServiceList
 
@@ -25,10 +26,10 @@ object DvbiSession {
     @Volatile
     var serviceListUrl: String? = null
 
-    /** Replaced by an Android MBMS Client implementation when one exists. */
-    var mbmsClient: IMbmsStreamingClient = NoMbmsClient
-
-    /** Whether [mbmsClient] accepted this client's registration (TS 26.347 clause 6.3.3.3). */
+    /** This client's registration with the MBMS Client of the build variant (set by [App]). */
     @Volatile
-    var mbmsRegistered: Boolean = false
+    var mbms: MbmsSession = MbmsSession(NoMbmsClient, "", listOf(IMbmsStreamingClient.DVBI_SERVICE_INSTANCE_CLASS))
+
+    /** Whether the MBMS Client accepted this client's registration (TS 26.347 clause 6.3.3.3). */
+    val mbmsRegistered: Boolean get() = mbms.registered
 }

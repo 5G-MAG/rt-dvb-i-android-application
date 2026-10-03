@@ -45,8 +45,7 @@ import com.google.android.material.progressindicator.LinearProgressIndicator
 import java.text.DateFormat
 import java.util.Date
 import com.fivegmag.dvbiclient.guide.GuideParser
-import com.fivegmag.dvbiclient.mbms.IMbmsStreamingClient
-import com.fivegmag.dvbiclient.mbms.MbmsReception
+import com.fivegmag.dvbiclient.mbms.MbmsSession
 import com.fivegmag.dvbiclient.mbms.MbmsUrl
 import com.fivegmag.dvbiclient.servicelist.Delivery
 import com.fivegmag.dvbiclient.servicelist.Service
@@ -77,6 +76,9 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var instanceText: TextView
     private lateinit var discardedText: TextView
     private var player: ExoPlayer? = null
+
+    // The listener of the MBMS service this player started, if any; MbmsSession stops only that one.
+    private var mbmsListener: MbmsSession.Listener? = null
     private var selection: ServiceSelection? = null
     private var current: Int? = null
     private val handler = Handler(Looper.getMainLooper())
@@ -352,6 +354,8 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
+        // Leaving the player: no longer interested in the service (clause 6.3.3.9.4).
+        DvbiSession.mbms.stop(mbmsListener)
         handler.removeCallbacks(reevaluate)
         handler.removeCallbacks(liveTicker)
         playerView.player = null
@@ -392,12 +396,16 @@ class PlayerActivity : AppCompatActivity() {
         findViewById<View>(R.id.contentFinishedImage).visibility = View.GONE
         contentFinished = null
         if (index == null) {
+            DvbiSession.mbms.stop(mbmsListener)
             exo.stop()
             instanceText.text = getString(R.string.no_playable_instance)
             showLinkedApp(sel.service, null)
             return
         }
         val inst = sel.service.instances[index]
+        // TS 26.347 V18.1.0 clause 6.3.3.9.4: "If an MAA is no longer interested in consuming the
+        // Media service, it should call the stopStreamingService() API call."
+        if (inst.delivery !is Delivery.Mbms) DvbiSession.mbms.stop(mbmsListener)
         instanceText.text = "Playing: ${inst.label}\n${describe(inst.delivery)}"
         when (val d = inst.delivery) {
             is Delivery.Dash -> start(exo, d.url, MimeTypes.APPLICATION_MPD, inst)
@@ -488,31 +496,20 @@ class PlayerActivity : AppCompatActivity() {
         exo.playWhenReady = true
     }
 
-    // TS 103 770 clause 9.3.3, through the MBMS Client. Only reached when an MBMS Client accepted
-    // the registration; with NoMbmsClient the instance is discarded before.
+    // TS 103 770 clause 9.3.3, through the MBMS Client (MbmsSession: registered once, the service
+    // started before stopped first). Only reached when an MBMS Client accepted the registration;
+    // with NoMbmsClient the instance is discarded before.
     private fun startMbms(exo: ExoPlayer, d: Delivery.Mbms, inst: ServiceInstance) {
-        val client = DvbiSession.mbmsClient
-        val serviceId = MbmsUrl.serviceId(d.locator)
-        client.registerStreamingApp(packageName, listOf(IMbmsStreamingClient.DVBI_SERVICE_INSTANCE_CLASS), object : IMbmsStreamingClient.Callback {
-            override fun registerStreamingResponse(success: Boolean, message: String) {
-                if (success) client.startStreamingService(serviceId) else runOnUiThread { onInstanceFailed(null) }
+        mbmsListener = object : MbmsSession.Listener {
+            override fun started(entry: Pair<String, String>) {
+                runOnUiThread { if (player === exo) start(exo, entry.second, entry.first, inst) }
             }
 
-            override fun streamingServiceListUpdate() {}
-
-            override fun serviceStarted(serviceId: String) {
-                val entry = MbmsReception.entryPoint(client.getStreamingServices(), d.locator)
-                runOnUiThread {
-                    if (entry == null) onInstanceFailed(null)
-                    else start(exo, entry.second, entry.first, inst)
-                }
+            override fun failed(message: String) {
+                Log.w(TAG_PLAYER, "MBMS service ${MbmsUrl.serviceId(d.locator)}: $message")
+                runOnUiThread { if (player === exo) onInstanceFailed(null) }
             }
-
-            override fun streamingServiceError(serviceId: String, message: String) {
-                Log.w(TAG_PLAYER, "MBMS service $serviceId: $message")
-                runOnUiThread { onInstanceFailed(null) }
-            }
-        })
+        }.also { DvbiSession.mbms.start(d.locator, it) }
     }
 
     private fun onInstanceFailed(error: PlaybackException?) {
