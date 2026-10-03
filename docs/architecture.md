@@ -9,7 +9,7 @@ already maintains.
 | Module | Depends on | What it holds |
 | --- | --- | --- |
 | `dvbi-core` | nothing but the Android SDK | The DVB-I logic, no user interface: service list, LCN, instance selection, HTTP rules of clause 4.3, content guide, registry discovery, the `mbms://` URL check, the MBMS Client interface and `NoMbmsClient` |
-| `app` | `dvbi-core`; one adapter per variant | The DVB-I client: channel list, player (Media3 ExoPlayer), settings, schedule |
+| `app` | `dvbi-core`; one adapter per variant | The DVB-I client, "5G-MAGflix for DVB-I": home screen, player (Media3 ExoPlayer), schedule and programme guide, More Episodes and Box Sets, application frame, settings, About |
 | `adapter-mbms` | `dvbi-core` | The MBMS Client of rt-mbms-mw-android behind the MBMS Client interface. Not implemented |
 | `adapter-5gms` | `dvbi-core` | The 5GMSd Client through the 5G-MAG 5GMS client libraries. Not implemented |
 

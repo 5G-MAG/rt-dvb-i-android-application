@@ -2,9 +2,12 @@
   <img src=".github/banner.svg" width="100%" alt="Reference Tools · DVB-I Services over 5G Systems: DVB-I Android Application">
 </p>
 
+<h1 align="center">5G-MAGflix for DVB-I</h1>
+
 <p align="center">
   A native Android DVB-I client that discovers a service list, presents its channels with their
-  content guide, and plays them with Media3 ExoPlayer, per ETSI TS 103 770.
+  content guide, and plays them with Media3 ExoPlayer, per ETSI TS 103 770, in the design of
+  5G-MAGflix.
 </p>
 
 <p align="center">
@@ -30,7 +33,7 @@
 |---|---|
 | **Implements** | ETSI TS 103 770 V1.2.1 (2024-09), *Digital Video Broadcasting (DVB); Service Discovery and Programme Metadata for DVB-I*, client side |
 | **Runs on** | Android 10 (API level 29) or newer |
-| **Plays** | DASH and HLS over HTTP, via Media3 ExoPlayer 1.10.0 |
+| **Plays** | DASH, HLS and DVB-I Playlists over HTTP, via Media3 ExoPlayer 1.10.0; HTML applications and on-demand players in a WebView |
 | **Part of** | [DVB-I Services over 5G Systems](https://www.5g-mag.com/reference-tools/dvb-i), alongside [rt-dvb-i-application](https://github.com/5G-MAG/rt-dvb-i-application) (the browser client), [rt-dvb-i-application-provider](https://github.com/5G-MAG/rt-dvb-i-application-provider) (the list and guide), [rt-dvb-i-service-list-registry](https://github.com/5G-MAG/rt-dvb-i-service-list-registry) (discovery), [rt-dvb-i-examples](https://github.com/5G-MAG/rt-dvb-i-examples) (runnable demos) and [rt-5gms-application](https://github.com/5G-MAG/rt-5gms-application) (the Exo DVB-I Player) |
 
 ## Introduction
@@ -53,7 +56,7 @@ This repository started as the folder `fivegmag_DVBIClient` of rt-5gms-applicati
 | Module | What it holds |
 | --- | --- |
 | `dvbi-core/` | An Android library with the DVB-I logic and no user interface: service list parsing, channel numbering (LCN), instance selection, the HTTP rules of clause 4.3, content guide requests and parsing, registry discovery, the `mbms://` URL check, and the MBMS Client interface with its `NoMbmsClient` default. No Activities, no Media3. |
-| `app/` | The DVB-I client built on `dvbi-core`: channel list, player (Media3 ExoPlayer), settings, schedule, and the HTTP transport (OkHttp). Three variants, one per role: `dvbi` (plain DVB-I, the default), `dvbiMbms` (acting as MBMS-Aware Application) and `dvbi5gms` (acting as 5GMSd-Aware Application). |
+| `app/` | The DVB-I client built on `dvbi-core`, "5G-MAGflix for DVB-I": home screen, player (Media3 ExoPlayer), schedule, programme guide, More Episodes and Box Sets, an application frame, settings and About, and the HTTP transport (OkHttp). Three variants, one per role: `dvbi` (plain DVB-I, the default), `dvbiMbms` (acting as MBMS-Aware Application) and `dvbi5gms` (acting as 5GMSd-Aware Application). |
 | `adapter-mbms/` | The MBMS Client of [rt-mbms-mw-android](https://github.com/5G-MAG/rt-mbms-mw-android) behind the MBMS Client interface, for `dvbiMbms`. Not implemented yet. |
 | `adapter-5gms/` | The 5GMSd Client through the 5G-MAG 5GMS client libraries, for `dvbi5gms`. Not implemented yet. |
 | `docs/` | [`architecture.md`](docs/architecture.md): the roles, the principles, and what is open. |
@@ -79,15 +82,52 @@ as `dvbi`. See [5G Broadcast and the MBMS Client](#5g-broadcast-and-the-mbms-cli
 | 5G Broadcast instances (`IdentifierBasedDeliveryParameters` with an `mbms://` locator) shown with a badge, the locator checked against 3GPP TS 26.347 V18.1.0 clause 8.2.2, and not played: there is no MBMS Client on Android yet | clause 9.3.3 |
 | HTTP: `max-age`, `If-Modified-Since`, `If-None-Match`, no retry after 400 or 406, `Retry-After`, the back-off, the next `ServiceListURI` on failure | clause 4.3; ETSI TS 102 796 V1.8.1 clause 7.3.2.6 |
 | Plain HTTP shown with a warning quoting the clause 7.3 exception and saying whether the endpoint is on the phone's private subnet | clause 7.3 |
-| Now/next in the channel list and the player, a schedule view, programme information; a 404 from the content guide re-acquires the service list, then backs off | clauses 4.3.3.4, 6.1, 6.5, 6.6 |
+| Now/next in the channel list and the player, a schedule view, a programme guide grid, programme information with its series position, secondary title and keywords; a 404 from the content guide re-acquires the service list, then backs off | clauses 4.3.3.4, 6.1, 6.5, 6.6; table 41 |
 | Parental restriction by age, the programme's rating taking precedence over the service's | clause 5.5.28 |
+| Access services of each instance's media shown as badges: subtitles (carriage, purpose, language; unknown terms taken as unavailable), audio description, sign language, dialogue enhancement, spoken subtitles | clause 4.5.2 |
+| More Episodes and Box Sets (categories, lists, contents), one page at a time with the pagination links; on-demand programmes offered when available and playable by their Template XML AIT, and started from their content deep-linked XML AIT | clauses 5.2.4, 6.7, 6.8, 6.9; table 52 |
+| Linked applications: an application controlling media presentation replaces the media; an application with media in parallel, the home page, or the application for outside the availability period opened on request; XML AIT application selection with the contextual parameters | clauses 5.2.3, 5.2.4.2, 5.2.4.4.6 |
+| DVB-I Playlists from a playlist server, their entries played in order, then the content finished image | clauses 5.2.7.2, 5.2.7.3, 5.7.1 |
 
 ### Not implemented
 
-Linked applications and XML AIT (no application engine: an instance with an application controlling media
-presentation is discarded, as clause 5.2.13 requires), playlist servers (clause 5.2.7.2), More Episodes and
-Box Sets (clauses 6.7, 6.8), on-demand programmes, the daily service list update (clause 5.1.7), and
-re-authentication after 401 or 403.
+HbbTV applications (the application engine starts HTML pages, and the XML AIT's platform profile criterion
+of ETSI TS 102 796 table 5 is not applied), application signalling inside the media (clause 5.2.3.3), Restart
+links (clause 5.2.4.3), credits (their display names are table 69), the daily service list update (clause
+5.1.7), a PIN to unlock restricted content, and re-authentication after 401 or 403.
+
+## Screenshots
+
+On a phone, with the DVB-I live demo of rt-dvb-i-examples:
+
+<p align="center">
+  <img src="docs/images/home.png" width="30%" alt="Home: the programme on now of the first service, then a row of television services and a row of radio services, each card with its channel number, logo, now and next, and badges">
+  <img src="docs/images/player.png" width="30%" alt="Player: the live television service, with its badges, the programme on now, next, and the Schedule button">
+  <img src="docs/images/guide.png" width="30%" alt="Programme guide: the services down the side, their programmes along a time line, and a line at now">
+</p>
+
+## User interface
+
+The user interface is based on the design of 5G-MAGflix, the 5GMSd Aware Application in
+[5G-MAG/rt-5gms-application](https://github.com/5G-MAG/rt-5gms-application), by Daniel Silhavy (Fraunhofer
+FOKUS): its dark theme and colours, the layouts of its home screen, cards, detail page, settings and About,
+and its adapters. The files derived from it carry its author and copyright beside this adaptation's.
+
+- **Font:** Ubuntu (Ubuntu Font Licence 1.0), downloaded at run time from the Google Fonts provider of
+  Google Play services (`app/src/main/res/font/`); no font file is bundled. Without the provider, Android's
+  default font is used.
+- **Icons:** [Material Symbols](https://github.com/google/material-design-icons) (Google, Apache License 2.0),
+  as vector drawables named `ic_*.xml`; the Reference Tools icon is the one of the 5G-MAG website.
+- **From 5G-MAGflix:** the GitHub mark and the LinkedIn and Slack icons of the About screen, and the
+  "5G-MAG" and "flix" lettering of the launcher icon and splash screen.
+
+What every badge means is listed under *Icons* on the About screen.
+
+## Credits
+
+The user interface is based on the design of 5G-MAGflix, the 5GMSd Aware Application in
+5G-MAG/rt-5gms-application, by Daniel Silhavy (Fraunhofer FOKUS):
+<https://github.com/5G-MAG/rt-5gms-application>.
 
 ## Specification
 
@@ -206,8 +246,9 @@ TS 103 770 V1.2.1 clause 5.1.3.2 defines the registry endpoint as the scheme, au
 `-PdvbiServiceListUrl=... -PdvbiRegistryUrl=...`, together with `-PdvbiCleartextHosts=...` for their host.
 
 In **Settings**, *Query the registry and pick a list* sends the query (with `TargetCountry` when a country is
-set) and offers the lists with the default marked; *Save* installs the chosen one. The channel list shows the
-plain HTTP warning at the top while the endpoints are reached without TLS.
+set) and offers the lists with the default marked; *Save* installs the chosen one. While the endpoints are
+reached without TLS, the home screen shows a one-line plain HTTP notice under the toolbar, which a tap opens
+to the full clause 7.3 warning.
 
 ## Configuration
 
@@ -271,7 +312,7 @@ ETSI TS 103 770 V1.2.1 defines no such element, so this client invents none.
 This project follows the [Gitflow workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 The `development` branch of this project serves as an integration branch for new features.
 
-`./gradlew test` runs the JVM unit tests of `dvbi-core` (81 cases), which need no device. The
+`./gradlew test` runs the JVM unit tests of `dvbi-core` (101 cases), which need no device. The
 activities in `app` have no automated tests. CI runs `./gradlew test assembleDebug` from
 `.github/workflows/test.yml`.
 
