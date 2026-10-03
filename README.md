@@ -118,8 +118,11 @@ and its adapters. The files derived from it carry its author and copyright besid
   default font is used.
 - **Icons:** [Material Symbols](https://github.com/google/material-design-icons) (Google, Apache License 2.0),
   as vector drawables named `ic_*.xml`; the Reference Tools icon is the one of the 5G-MAG website.
+- **From the 5G-MAG website:** the launcher icon and splash screen are the DVB-I Services over 5G Systems
+  project icon (`device-tv`, a Tabler icon, MIT licence); the top bar shows the
+  white 5G-MAG logo (`logo_5g_mag_white.png`, from the website's `static/img/5g-mag-logo-white.png`).
 - **From 5G-MAGflix:** the GitHub mark and the LinkedIn and Slack icons of the About screen, and the
-  "5G-MAG" and "flix" lettering of the launcher icon and splash screen.
+  "5G-MAG" and "flix" lettering of the title.
 
 What every badge means is listed under *Icons* on the About screen.
 
@@ -315,8 +318,8 @@ ETSI TS 103 770 V1.2.1 defines no such element, so this client invents none.
 This project follows the [Gitflow workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 The `development` branch of this project serves as an integration branch for new features.
 
-`./gradlew test` runs the JVM unit tests of `dvbi-core` (101 cases), which need no device. The
-activities in `app` have no automated tests. CI runs `./gradlew test assembleDebug` from
+`./gradlew test` runs the JVM unit tests, which need no device: 121 cases in `dvbi-core`, and in `app` one
+case (the TLS profile of the HTTP transport), run once per variant. The activities have no automated tests. CI runs `./gradlew test assembleDebug` from
 `.github/workflows/test.yml`.
 
 ## Contributing
