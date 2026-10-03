@@ -11,6 +11,8 @@ package com.fivegmag.dvbiclient
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.media.MediaDrm
 import android.os.Bundle
 import android.os.Handler
@@ -18,9 +20,15 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
@@ -29,7 +37,11 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import coil.imageLoader
+import coil.load
 import coil.request.ImageRequest
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.chip.ChipGroup
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import java.text.DateFormat
 import java.util.Date
 import com.fivegmag.dvbiclient.guide.GuideParser
@@ -41,13 +53,18 @@ import com.fivegmag.dvbiclient.servicelist.Service
 import com.fivegmag.dvbiclient.servicelist.ServiceInstance
 import com.fivegmag.dvbiclient.servicelist.ServiceListRules
 import com.fivegmag.dvbiclient.servicelist.ServiceSelection
+import com.fivegmag.dvbiclient.ui.Badge
+import com.fivegmag.dvbiclient.ui.ServiceBadges
+import com.fivegmag.dvbiclient.ui.ServiceTypes
 
 const val TAG_PLAYER = "DVB-I Player"
 
 /**
  * Plays one service of the installed service list with Media3 ExoPlayer, choosing the instance by
  * the precedence of ETSI TS 103 770 V1.2.1 clause 5.2.13 and falling back to the next instance when
- * one fails to play.
+ * one fails to play. The screen is 5G-MAGflix's detail page (rt-5gms-application
+ * fivegmag_5GMSdAwareApplication DetailActivity) with the player always in the media area, which
+ * goes fullscreen from the player's button or by turning the phone to landscape.
  */
 @OptIn(UnstableApi::class)
 class PlayerActivity : AppCompatActivity() {
@@ -63,6 +80,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var settings: Settings
     private var serviceAge: Int? = null
     private var programmeAge: Int? = null
+    private var fullscreen = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +88,9 @@ class PlayerActivity : AppCompatActivity() {
         playerView = findViewById(R.id.playerView)
         instanceText = findViewById(R.id.instanceText)
         discardedText = findViewById(R.id.discardedText)
+        val toolbar = findViewById<MaterialToolbar>(R.id.detailToolbar)
+        toolbar.setNavigationOnClickListener { finish() }
+        setupFullscreen()
 
         val uid = intent.getStringExtra(EXTRA_SERVICE_UID)
         val service = DvbiSession.serviceList?.services?.firstOrNull { it.uid == uid }
@@ -78,17 +99,95 @@ class PlayerActivity : AppCompatActivity() {
             return
         }
         title = service.name
+        toolbar.title = service.name
         findViewById<TextView>(R.id.serviceTitle).text = service.name
+        settings = Settings(this)
+        serviceAge = ServiceListRules.minimumAgeFor(service.ratings, settings.country.ifEmpty { null })
+        showService(service)
         showFiveG(service)
         showLogoWhenAudioOnly(service)
         selection = ServiceSelection(service, DeviceCapabilities.current(clientPackages()))
-        settings = Settings(this)
-        serviceAge = ServiceListRules.minimumAgeFor(service.ratings, settings.country.ifEmpty { null })
+        // Without a content guide there is no programme to show.
+        if (service.guide == null) {
+            for (id in listOf(R.id.liveBadge, R.id.nowTitle, R.id.nowTime, R.id.nowProgress, R.id.nowSynopsis, R.id.nextText)) {
+                findViewById<View>(id).visibility = View.GONE
+            }
+        }
         if (service.guide != null) {
             findViewById<Button>(R.id.scheduleButton).also {
                 it.visibility = View.VISIBLE
                 it.setOnClickListener { startActivity(ScheduleActivity.intent(this, service.uid)) }
             }
+        }
+    }
+
+    // Channel number, service type, logo and badges.
+    private fun showService(service: Service) {
+        val list = DvbiSession.serviceList
+        val lcn = list?.let { l ->
+            ServiceListRules.assignChannelNumbers(ServiceListRules.selectLcnTable(l.lcnTables, settings.region, settings.packages), l.services)[service.uid]?.lcn
+        }
+        findViewById<TextView>(R.id.lcnBadge).also {
+            it.text = lcn?.toString() ?: ""
+            it.visibility = if (lcn != null) View.VISIBLE else View.GONE
+        }
+        findViewById<TextView>(R.id.typeBadge).text = getString(ServiceTypes.label(service.serviceType))
+        service.logo?.let { logo ->
+            findViewById<ImageView>(R.id.serviceLogo).also {
+                it.visibility = View.VISIBLE
+                it.load(logo.url) { crossfade(true) }
+            }
+        }
+        showBadges(service)
+    }
+
+    private fun showBadges(service: Service) {
+        ServiceBadges.bind(findViewById<ChipGroup>(R.id.badges), ServiceBadges.of(
+            service, serviceAge, programmeAge, settings.parentalThreshold, DvbiSession.mbmsRegistered,
+        ).filter { it.kind != Badge.Kind.RESTRICTED })
+    }
+
+    // Fullscreen from the player's button, or by turning the phone: the player fills the screen and
+    // the system bars are hidden; back leaves fullscreen first.
+    private fun setupFullscreen() {
+        // A service plays one stream; there is no previous or next item to skip to.
+        playerView.setShowPreviousButton(false)
+        playerView.setShowNextButton(false)
+        playerView.setFullscreenButtonClickListener { enter -> setFullscreen(enter, rotate = true) }
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (fullscreen) setFullscreen(false, rotate = true) else finish()
+            }
+        })
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) setFullscreen(true, rotate = false)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val landscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
+        if (landscape != fullscreen) setFullscreen(landscape, rotate = false)
+    }
+
+    private fun setFullscreen(on: Boolean, rotate: Boolean) {
+        fullscreen = on
+        playerView.setFullscreenButtonState(on)
+        findViewById<View>(R.id.detailToolbar).visibility = if (on) View.GONE else View.VISIBLE
+        findViewById<View>(R.id.detailScroll).visibility = if (on) View.GONE else View.VISIBLE
+        val media = findViewById<View>(R.id.mediaContainer)
+        media.layoutParams = (media.layoutParams as ConstraintLayout.LayoutParams).also {
+            it.dimensionRatio = if (on) null else "16:9"
+            it.height = if (on) ConstraintLayout.LayoutParams.MATCH_CONSTRAINT else 0
+            it.bottomToBottom = if (on) ConstraintLayout.LayoutParams.PARENT_ID else ConstraintLayout.LayoutParams.UNSET
+        }
+        val insets = WindowCompat.getInsetsController(window, window.decorView)
+        if (on) {
+            insets.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            insets.hide(WindowInsetsCompat.Type.systemBars())
+        } else {
+            insets.show(WindowInsetsCompat.Type.systemBars())
+        }
+        if (rotate) {
+            requestedOrientation = if (on) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE else ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
 
@@ -123,19 +222,43 @@ class PlayerActivity : AppCompatActivity() {
             val events = r.value ?: return@background
             val (now, next) = GuideParser.nowNext(events, System.currentTimeMillis())
             val fmt = DateFormat.getTimeInstance(DateFormat.SHORT)
-            findViewById<TextView>(R.id.nowNextText).text = listOfNotNull(
-                now?.let { "Now: ${it.title} (${fmt.format(Date(it.start))} to ${fmt.format(Date(it.end))})" },
-                next?.let { "Next: ${it.title} at ${fmt.format(Date(it.start))}" },
-            ).joinToString("\n")
+            showNowNext(service, now, next, fmt)
             val wasAllowed = parentalAllows()
             programmeAge = now?.info?.let { ServiceListRules.minimumAgeFor(it.ratings, settings.country.ifEmpty { null }) }
             showParental()
+            showBadges(service)
             val sel = selection ?: return@background
             if (wasAllowed && !parentalAllows()) {
                 player?.stop()
             } else if (!wasAllowed && parentalAllows()) {
                 play(sel.select(System.currentTimeMillis()))
             }
+        }
+    }
+
+    private fun showNowNext(service: Service, now: com.fivegmag.dvbiclient.guide.GuideEvent?, next: com.fivegmag.dvbiclient.guide.GuideEvent?, fmt: DateFormat) {
+        // LIVE: the programme on now of a linear service (ServiceTypeCS linear, linear-radio).
+        findViewById<View>(R.id.liveBadge).visibility =
+            if (now != null && ServiceTypes.isLinear(service.serviceType)) View.VISIBLE else View.GONE
+        findViewById<TextView>(R.id.nowTitle).text = now?.title ?: getString(R.string.no_programme_now)
+        findViewById<TextView>(R.id.nowTime).also {
+            it.text = now?.let { n -> "${fmt.format(Date(n.start))} to ${fmt.format(Date(n.end))}" } ?: ""
+            it.visibility = if (now != null) View.VISIBLE else View.GONE
+        }
+        findViewById<LinearProgressIndicator>(R.id.nowProgress).also {
+            it.visibility = if (now != null) View.VISIBLE else View.GONE
+            if (now != null && now.end > now.start) {
+                it.progress = (((System.currentTimeMillis() - now.start) * 100) / (now.end - now.start)).toInt().coerceIn(0, 100)
+            }
+        }
+        findViewById<TextView>(R.id.nowSynopsis).also {
+            val syn = now?.info?.synopsis ?: ""
+            it.text = syn
+            it.visibility = if (syn.isEmpty()) View.GONE else View.VISIBLE
+        }
+        findViewById<TextView>(R.id.nextText).also {
+            it.text = next?.let { n -> getString(R.string.next_line, fmt.format(Date(n.start)), n.title) } ?: ""
+            it.visibility = if (next != null) View.VISIBLE else View.GONE
         }
     }
 
@@ -172,9 +295,12 @@ class PlayerActivity : AppCompatActivity() {
     private fun showFiveG(service: Service) {
         val mbms = service.instances.mapNotNull { it.delivery as? Delivery.Mbms }
         if (mbms.isEmpty()) return
-        findViewById<View>(R.id.fiveGBadge).visibility = View.VISIBLE
+        findViewById<View>(R.id.fiveGSection).visibility = View.VISIBLE
+        if (mbms.any { MbmsUrl.problem(it.locator) != null }) {
+            findViewById<TextView>(R.id.fiveGBadge).compoundDrawableTintList =
+                android.content.res.ColorStateList.valueOf(getColor(R.color.badge_5g_bad))
+        }
         val detail = findViewById<TextView>(R.id.fiveGDetail)
-        detail.visibility = View.VISIBLE
         detail.text = mbms.joinToString("\n\n") { d ->
             val problem = MbmsUrl.problem(d.locator)
             buildString {

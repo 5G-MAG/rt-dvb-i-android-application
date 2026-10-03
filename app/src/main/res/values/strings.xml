@@ -61,4 +61,8 @@
     <string name="category_data">Data services</string>
     <string name="category_mosaic">Mosaic</string>
     <string name="category_other">Other services</string>
+
+    <!-- Player -->
+    <string name="back">Back</string>
+    <string name="instance_heading">Service instance</string>
 </resources>
