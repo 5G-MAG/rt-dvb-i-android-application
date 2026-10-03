@@ -139,4 +139,6 @@
     <string name="open_application">Open the application</string>
     <string name="application_unavailable">Application unavailable</string>
     <string name="content_finished">Content finished</string>
+    <string name="behind_live">%s behind \u00b7 Go live</string>
+    <string name="go_live">Go to the live edge</string>
 </resources>

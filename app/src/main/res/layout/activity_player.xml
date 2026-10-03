@@ -50,6 +50,29 @@ Derived from rt-5gms-application fivegmag_5GMSdAwareApplication (5G-MAGflix) res
             android:background="@color/black"
             app:show_buffering="when_playing" />
 
+        <!-- Live: LIVE at the live edge; behind it, how far and a tap to go back to it -->
+        <FrameLayout
+            android:id="@+id/liveControl"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_gravity="top|start"
+            android:layout_marginStart="4dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:minWidth="48dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/liveChip"
+                style="@style/MediaTypeBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_badge_featured"
+                android:text="@string/badge_live" />
+        </FrameLayout>
+
         <!-- The content finished image, after the last item of a playlist (clause 5.2.7.3) -->
         <ImageView
             android:id="@+id/contentFinishedImage"

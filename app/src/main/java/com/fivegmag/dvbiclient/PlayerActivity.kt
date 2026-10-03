@@ -85,6 +85,7 @@ class PlayerActivity : AppCompatActivity() {
     private var serviceAge: Int? = null
     private var programmeAge: Int? = null
     private var fullscreen = false
+    private var liveEdgeOffset: Long? = null
     private var contentFinished: com.fivegmag.dvbiclient.servicelist.Image? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -156,6 +157,55 @@ class PlayerActivity : AppCompatActivity() {
         val badges = ServiceBadges.of(service, serviceAge, programmeAge, settings.parentalThreshold, DvbiSession.mbmsRegistered)
             .filter { it.kind != Badge.Kind.RESTRICTED }
         ServiceBadges.bind(findViewById<ChipGroup>(R.id.badges), if (Role.fiveGmsSession()) listOf(ServiceBadges.fiveGms()) + badges else badges)
+    }
+
+    private val liveTicker = object : Runnable {
+        override fun run() {
+            updateLiveUi()
+        }
+    }
+
+    // A live stream has no programme position to show and nothing to skip: the skip buttons and
+    // the position and duration are hidden, a LIVE chip shows at the live edge, and behind it how
+    // far behind and a tap back to the live edge; the scrubber stays for the time-shift window. A
+    // stream that is not live keeps the full controls.
+    private fun updateLiveUi() {
+        val exo = player ?: return
+        handler.removeCallbacks(liveTicker)
+        val live = exo.isCurrentMediaItemLive
+        playerView.setShowRewindButton(!live)
+        playerView.setShowFastForwardButton(!live)
+        playerView.findViewById<View>(androidx.media3.ui.R.id.exo_time)?.visibility = if (live) View.GONE else View.VISIBLE
+        val control = findViewById<View>(R.id.liveControl)
+        control.visibility = if (live) View.VISIBLE else View.GONE
+        if (!live) return
+        // The smallest live offset seen since playback (re)started at the default position: the
+        // player closes in on the live edge after it starts, so the first offset can be too large.
+        val offset = exo.currentLiveOffset
+        if (offset != androidx.media3.common.C.TIME_UNSET && exo.playbackState == Player.STATE_READY) {
+            liveEdgeOffset = minOf(liveEdgeOffset ?: offset, offset)
+        }
+        val edge = liveEdgeOffset
+        val behind = if (edge == null || offset == androidx.media3.common.C.TIME_UNSET) 0L else offset - edge
+        val chip = findViewById<TextView>(R.id.liveChip)
+        if (behind > BEHIND_LIVE_MS) {
+            val s = behind / 1000
+            chip.text = getString(R.string.behind_live, String.format(java.util.Locale.ROOT, "%d:%02d", s / 60, s % 60))
+            chip.setBackgroundResource(R.drawable.bg_badge_behind_live)
+            control.contentDescription = chip.text.toString() + ". " + getString(R.string.go_live)
+            control.setOnClickListener {
+                liveEdgeOffset = null
+                exo.seekToDefaultPosition()
+                updateLiveUi()
+            }
+        } else {
+            chip.text = getString(R.string.badge_live)
+            chip.setBackgroundResource(R.drawable.bg_badge_featured)
+            control.contentDescription = getString(R.string.badge_live)
+            control.setOnClickListener(null)
+            control.isClickable = false
+        }
+        handler.postDelayed(liveTicker, 1000)
     }
 
     // Fullscreen from the player's button, or by turning the phone: the player fills the screen and
@@ -288,6 +338,10 @@ class PlayerActivity : AppCompatActivity() {
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_ENDED) showContentFinished()
             }
+
+            override fun onTimelineChanged(timeline: androidx.media3.common.Timeline, reason: Int) {
+                updateLiveUi()
+            }
         })
         playerView.player = exo
         player = exo
@@ -299,6 +353,7 @@ class PlayerActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         handler.removeCallbacks(reevaluate)
+        handler.removeCallbacks(liveTicker)
         playerView.player = null
         player?.release()
         player = null
@@ -426,6 +481,7 @@ class PlayerActivity : AppCompatActivity() {
         // service list carries no licence server, so the one the media signals is used.
         inst.protection?.drmSystems?.firstNotNullOfOrNull { DeviceCapabilities.drmUuid(it)?.takeIf { u -> MediaDrm.isCryptoSchemeSupported(u) } }
             ?.let { item.setDrmConfiguration(MediaItem.DrmConfiguration.Builder(it).build()) }
+        liveEdgeOffset = null
         exo.setMediaItem(item.build())
         exo.prepare()
         exo.playWhenReady = true
@@ -499,6 +555,9 @@ class PlayerActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_SERVICE_UID = "serviceUid"
         const val EXTRA_PACKAGES = "packages"
+
+        /** Further behind the live edge than this, the chip offers to go back to it (presentation only). */
+        private const val BEHIND_LIVE_MS = 10_000L
 
         fun intent(context: Context, uid: String, packages: List<String>): Intent =
             Intent(context, PlayerActivity::class.java)
