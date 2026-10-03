@@ -28,6 +28,8 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import coil.imageLoader
+import coil.request.ImageRequest
 import java.text.DateFormat
 import java.util.Date
 import com.fivegmag.dvbiclient.guide.GuideParser
@@ -78,6 +80,7 @@ class PlayerActivity : AppCompatActivity() {
         title = service.name
         findViewById<TextView>(R.id.serviceTitle).text = service.name
         showFiveG(service)
+        showLogoWhenAudioOnly(service)
         selection = ServiceSelection(service, DeviceCapabilities.current(clientPackages()))
         settings = Settings(this)
         serviceAge = ServiceListRules.minimumAgeFor(service.ratings, settings.country.ifEmpty { null })
@@ -87,6 +90,15 @@ class PlayerActivity : AppCompatActivity() {
                 it.setOnClickListener { startActivity(ScheduleActivity.intent(this, service.uid)) }
             }
         }
+    }
+
+    // A service without video (a radio service) shows its logo in the picture area: PlayerView
+    // draws the default artwork only while no video track is selected, so television is unaffected.
+    @OptIn(UnstableApi::class)
+    private fun showLogoWhenAudioOnly(service: Service) {
+        playerView.artworkDisplayMode = PlayerView.ARTWORK_DISPLAY_MODE_FIT
+        val logo = service.logo ?: return
+        imageLoader.enqueue(ImageRequest.Builder(this).data(logo.url).target { playerView.defaultArtwork = it }.build())
     }
 
     // Clause 5.5.28: the content guide's rating of the programme on air takes precedence over the
