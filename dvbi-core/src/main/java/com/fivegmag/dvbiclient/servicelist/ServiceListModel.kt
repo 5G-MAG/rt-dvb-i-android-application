@@ -134,6 +134,44 @@ data class ServiceInstance(
     val availability: Availability?,
     val packages: List<String>,
     val protection: Protection?,
+    /** The access services of the instance's media, ContentAttributes.AccessibilityAttributes (clause 4.5.2, table 1b). */
+    val accessibility: Accessibility = Accessibility(),
+)
+
+/**
+ * Access services provided by the media of a service instance, ETSI TS 103 770 V1.2.1 clause 4.5.2:
+ * "If no child element for a particular service is present, the corresponding access service is
+ * not available in the context of the corresponding AccessibilityAttributes element." (clause
+ * 4.5.1). Each list holds one entry per child element; the languages are those signalled, "" when
+ * none is.
+ */
+data class Accessibility(
+    /** SubtitleAttributes (clause 4.5.2.3). */
+    val subtitles: List<SubtitleAttributes> = emptyList(),
+    /** AudioDescriptionAttributes (clause 4.5.2.4): AudioAttributes.AudioLanguage of each. */
+    val audioDescription: List<String> = emptyList(),
+    /** SigningAttributes (clause 4.5.2.2): SignLanguage of each. */
+    val signing: List<String> = emptyList(),
+    /** DialogueEnhancementAttributes (clause 4.5.2.5): AudioAttributes.AudioLanguage of each. */
+    val dialogueEnhancement: List<String> = emptyList(),
+    /** SpokenSubtitlesAttributes (clause 4.5.2.6): AudioAttributes.AudioLanguage of each. */
+    val spokenSubtitles: List<String> = emptyList(),
+) {
+    val isEmpty: Boolean
+        get() = subtitles.isEmpty() && audioDescription.isEmpty() && signing.isEmpty() &&
+            dialogueEnhancement.isEmpty() && spokenSubtitles.isEmpty()
+}
+
+/**
+ * One SubtitleAttributes (clause 4.5.2.3, tva:SubtitleAttributesType): the Carriage, Coding and
+ * Purpose hrefs as signalled (SubtitleCarriageCS, SubtitleCodingFormatCS, SubtitlePurposeCS of ETSI
+ * TS 102 822-3-1) and SubtitleLanguage.
+ */
+data class SubtitleAttributes(
+    val carriage: String,
+    val codings: List<String>,
+    val language: String,
+    val purpose: String?,
 )
 
 /**

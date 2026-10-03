@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Jordi J. Gimenez (5G-MAG)
+Copyright: (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+
+Access services of a service instance's media (ETSI TS 103 770 V1.2.1 clause 4.5.2): subtitles with a
+known and an unknown term, audio description, signing, dialogue enhancement and spoken subtitles,
+in the element order of tva:AccessibilityAttributesType.
+-->
+<ServiceList
+  xmlns="urn:dvb:metadata:servicediscovery:2024"
+  xmlns:tva="urn:tva:metadata:2024"
+  xmlns:dvbisd-t="urn:dvb:metadata:servicediscovery-types:2023"
+  id="tag:dvbi.example,2024:servicelist:access" version="1" xml:lang="en">
+  <Name>Access Services List</Name>
+  <ProviderName>Sample Provider</ProviderName>
+  <Service version="1">
+    <UniqueIdentifier>tag:sample,2024:service:access</UniqueIdentifier>
+    <ServiceInstance priority="1">
+      <ContentAttributes>
+        <AccessibilityAttributes>
+          <tva:SubtitleAttributes>
+            <tva:Carriage href="urn:tva:metadata:cs:SubtitleCarriageCS:2023:3"/>
+            <tva:Coding href="urn:tva:metadata:cs:SubtitleCodingFormatCS:2023:3.2.2"/>
+            <tva:Coding href="urn:tva:metadata:cs:SubtitleCodingFormatCS:2023:3.6.1.2"/>
+            <tva:SubtitleLanguage>en</tva:SubtitleLanguage>
+            <tva:Purpose href="urn:tva:metadata:cs:SubtitlePurposeCS:2023:2"/>
+            <tva:SuitableForTTS>false</tva:SuitableForTTS>
+          </tva:SubtitleAttributes>
+          <tva:SubtitleAttributes>
+            <tva:Carriage href="urn:tva:metadata:cs:SubtitleCarriageCS:2023:7"/>
+            <tva:Coding href="urn:tva:metadata:cs:SubtitleCodingFormatCS:2023:4"/>
+            <tva:SubtitleLanguage>fr</tva:SubtitleLanguage>
+            <tva:SuitableForTTS>false</tva:SuitableForTTS>
+          </tva:SubtitleAttributes>
+          <tva:AudioDescriptionAttributes>
+            <tva:AudioAttributes>
+              <tva:Coding href="urn:dvb:metadata:cs:AudioCodecCS:2020:1.1.2"/>
+              <tva:AudioLanguage purpose="urn:tva:metadata:cs:AudioPurposeCS:2007:1">en</tva:AudioLanguage>
+            </tva:AudioAttributes>
+          </tva:AudioDescriptionAttributes>
+          <tva:SigningAttributes>
+            <tva:Coding href="urn:dvb:metadata:cs:VideoCodecCS:2022:4.1.6"/>
+            <tva:SignLanguage>bfi</tva:SignLanguage>
+          </tva:SigningAttributes>
+          <tva:DialogueEnhancementAttributes>
+            <tva:AudioAttributes>
+              <tva:Coding href="urn:dvb:metadata:cs:AudioCodecCS:2020:4.1.4"/>
+              <tva:AudioLanguage purpose="urn:tva:metadata:cs:AudioPurposeCS:2007:8">es</tva:AudioLanguage>
+            </tva:AudioAttributes>
+          </tva:DialogueEnhancementAttributes>
+          <tva:SpokenSubtitlesAttributes>
+            <tva:AudioAttributes>
+              <tva:Coding href="urn:dvb:metadata:cs:AudioCodecCS:2020:1.1.2"/>
+            </tva:AudioAttributes>
+          </tva:SpokenSubtitlesAttributes>
+        </AccessibilityAttributes>
+      </ContentAttributes>
+      <DASHDeliveryParameters>
+        <UriBasedLocation contentType="application/dash+xml"><dvbisd-t:URI>http://192.168.1.202:3014/a/manifest.mpd</dvbisd-t:URI></UriBasedLocation>
+      </DASHDeliveryParameters>
+    </ServiceInstance>
+    <ServiceInstance priority="2">
+      <DASHDeliveryParameters>
+        <UriBasedLocation contentType="application/dash+xml"><dvbisd-t:URI>http://192.168.1.202:3014/b/manifest.mpd</dvbisd-t:URI></UriBasedLocation>
+      </DASHDeliveryParameters>
+    </ServiceInstance>
+    <ServiceName>Access</ServiceName>
+    <ProviderName>Sample Provider</ProviderName>
+  </Service>
+</ServiceList>

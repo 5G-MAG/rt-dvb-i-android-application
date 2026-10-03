@@ -246,6 +246,30 @@ object ServiceListParser {
             availability = inst.child("Availability")?.let { parseAvailability(it) },
             packages = inst.children("SubscriptionPackage").map { it.text }.filter { it.isNotEmpty() },
             protection = if (drm.isEmpty() && ca.isEmpty()) null else Protection(drm, ca),
+            accessibility = inst.child("ContentAttributes")?.child("AccessibilityAttributes")
+                ?.let { parseAccessibility(it) } ?: Accessibility(),
+        )
+    }
+
+    // AccessibilityAttributes (tva:AccessibilityAttributesType), the children of table 1a that a
+    // media access service is signalled by (clause 4.5.2). Ported from the browser client
+    // (rt-dvb-i-application public/app.js), which reads the AudioDescriptionAttributes,
+    // SubtitleAttributes and Carriage; the other children are read as their schema types give.
+    private fun parseAccessibility(aa: Element): Accessibility {
+        fun audioLanguages(name: String) = aa.children(name).map { it.child("AudioAttributes")?.childText("AudioLanguage") ?: "" }
+        return Accessibility(
+            subtitles = aa.children("SubtitleAttributes").map { sa ->
+                SubtitleAttributes(
+                    carriage = sa.child("Carriage")?.attr("href") ?: "",
+                    codings = sa.children("Coding").mapNotNull { it.attr("href") },
+                    language = sa.childText("SubtitleLanguage"),
+                    purpose = sa.child("Purpose")?.attr("href"),
+                )
+            },
+            audioDescription = audioLanguages("AudioDescriptionAttributes"),
+            signing = aa.children("SigningAttributes").map { it.childText("SignLanguage") },
+            dialogueEnhancement = audioLanguages("DialogueEnhancementAttributes"),
+            spokenSubtitles = audioLanguages("SpokenSubtitlesAttributes"),
         )
     }
 
