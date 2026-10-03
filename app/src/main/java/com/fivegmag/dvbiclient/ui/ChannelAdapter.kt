@@ -66,6 +66,7 @@ class ChannelAdapter(
         h.name.text = s.name
         h.badge5g.visibility = if (s.instances.any { it.delivery is Delivery.Mbms }) View.VISIBLE else View.GONE
         h.rating.text = row.minimumAge?.takeIf { it > 0 }?.let { "$it+" } ?: ""
+        h.rating.visibility = if (h.rating.text.isEmpty()) View.GONE else View.VISIBLE
         h.nowNext.text = row.nowNext
         h.nowNext.visibility = if (row.nowNext.isEmpty()) View.GONE else View.VISIBLE
         val logo = s.logo
