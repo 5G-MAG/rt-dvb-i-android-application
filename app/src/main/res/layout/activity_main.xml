@@ -26,32 +26,55 @@ Derived from rt-5gms-application fivegmag_5GMSdAwareApplication (5G-MAGflix) res
         app:subtitleTextColor="@color/on_surface_secondary"
         app:titleTextColor="@color/on_surface_primary">
 
-        <LinearLayout
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <!-- The 5G-MAG logo of the 5G-MAG website (static/img/5g-mag-logo-white.png), at the start
+         of the bar. -->
+    <ImageView
+        android:id="@+id/toolbarLogo"
+        android:layout_width="wrap_content"
+        android:layout_height="28dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/logo_5g_mag"
+        android:elevation="8dp"
+        android:layout_marginStart="16dp"
+        android:src="@drawable/logo_5g_mag_white"
+        app:layout_constraintBottom_toBottomOf="@+id/mainToolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/mainToolbar" />
+
+    <!-- App name and the installed service list, below the bar that carries the 5G-MAG logo. -->
+    <LinearLayout
+        android:id="@+id/appHeader"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/surface_dark"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mainToolbar">
+
+        <TextView
+            android:id="@+id/logoText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:fontFamily="@font/ubuntu_medium"
+            android:textSize="20sp" />
 
-            <TextView
-                android:id="@+id/logoText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/ubuntu_medium"
-                android:textSize="20sp" />
-
-            <!-- The installed service list: its Name and version -->
-            <TextView
-                android:id="@+id/listText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textColor="@color/on_surface_secondary"
-                android:textSize="12sp"
-                android:visibility="gone"
-                tools:text="5G-MAG · version 10" />
-        </LinearLayout>
-
-    </com.google.android.material.appbar.MaterialToolbar>
+        <!-- The installed service list: its Name and version -->
+        <TextView
+            android:id="@+id/listText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/on_surface_secondary"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:text="5G-MAG · version 10" />
+    </LinearLayout>
 
     <!-- Notices: plain HTTP (clause 7.3) and service list problems. One line; a tap shows the text. -->
     <LinearLayout
@@ -74,7 +97,7 @@ Derived from rt-5gms-application fivegmag_5GMSdAwareApplication (5G-MAGflix) res
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mainToolbar"
+        app:layout_constraintTop_toBottomOf="@+id/appHeader"
         tools:visibility="visible">
 
         <LinearLayout
