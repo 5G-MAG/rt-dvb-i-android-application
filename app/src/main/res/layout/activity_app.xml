@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+License: 5G-MAG Public License (v1.0)
+Author: Jordi J. Gimenez (5G-MAG)
+Copyright: (C) 2026 5G-MAG Association
+For full license terms please see the LICENSE file distributed with this
+program. If this file is missing then the license can be retrieved from
+https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
+-->
+<!-- An HTML application (an on-demand player of an XML AIT, or a linked application) over the whole
+     screen, with a button to close it. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <WebView
+        android:id="@+id/appWebView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/appLoading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        app:indicatorColor="@color/fivegmag_blue" />
+
+    <ImageButton
+        android:id="@+id/appClose"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="8dp"
+        android:background="@drawable/bg_icon_tile"
+        android:backgroundTint="#99000000"
+        android:contentDescription="@string/close_application"
+        android:src="@drawable/ic_close"
+        app:tint="@color/white" />
+</FrameLayout>

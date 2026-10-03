@@ -23,6 +23,15 @@
             android:exported="false"
             android:theme="@style/Theme.DVBIClient.NoActionBar" />
         <activity
+            android:name=".BrowseActivity"
+            android:exported="false"
+            android:theme="@style/Theme.DVBIClient.NoActionBar" />
+        <activity
+            android:name=".AppActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:exported="false"
+            android:theme="@style/Theme.DVBIClient.NoActionBar" />
+        <activity
             android:name=".GuideActivity"
             android:exported="false"
             android:theme="@style/Theme.DVBIClient.NoActionBar" />

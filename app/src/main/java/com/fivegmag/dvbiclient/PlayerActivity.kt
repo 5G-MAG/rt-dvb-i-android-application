@@ -107,6 +107,12 @@ class PlayerActivity : AppCompatActivity() {
         showFiveG(service)
         showLogoWhenAudioOnly(service)
         selection = ServiceSelection(service, DeviceCapabilities.current(clientPackages()))
+        BrowseActivity.boxSets(this, service)?.let { boxSets ->
+            findViewById<Button>(R.id.boxSetsButton).also {
+                it.visibility = View.VISIBLE
+                it.setOnClickListener { startActivity(boxSets) }
+            }
+        }
         // Without a content guide there is no programme to show.
         if (service.guide == null) {
             for (id in listOf(R.id.liveBadge, R.id.nowTitle, R.id.nowTime, R.id.nowProgress, R.id.nowSynopsis, R.id.nextText)) {

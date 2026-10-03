@@ -38,4 +38,6 @@ https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
     <color name="badge_5g_ok">#FFFFB340</color>
     <color name="badge_5g_bad">#FFFF6961</color>
     <color name="badge_neutral">#FFB3B3B3</color>
+    <!-- ON-DEMAND, the green of 5G-MAGflix's TV badge (media_type_badge_tv) -->
+    <color name="badge_on_demand">#FF4CAF50</color>
 </resources>

@@ -40,7 +40,7 @@ data class Badge(
     @ColorRes val color: Int,
     val description: String,
 ) {
-    enum class Kind { FIVE_G, FIVE_G_BAD, AGE, PROGRAMME_AGE, AUDIO_DESCRIPTION, SUBTITLES, HARD_OF_HEARING, SIGNING,
+    enum class Kind { LIVE, ON_DEMAND, FIVE_G, FIVE_G_BAD, AGE, PROGRAMME_AGE, AUDIO_DESCRIPTION, SUBTITLES, HARD_OF_HEARING, SIGNING,
         DIALOGUE_ENHANCEMENT, SPOKEN_SUBTITLES, SUBSCRIPTION, CONDITIONAL_ACCESS, DRM, REGION, OFF_AIR,
         BROADCAST_ONLY, MULTICAST_ONLY, DASH, HLS, GUIDE, RESTRICTED }
 }
@@ -155,6 +155,8 @@ object ServiceBadges {
 
     /** Every badge with what it means in general, for the legend of the About screen. */
     fun legend(): List<Badge> = listOf(
+        Badge(Badge.Kind.LIVE, null, "LIVE", R.color.flix_red, "The programme on now of a linear service (ServiceTypeCS linear or linear-radio)"),
+        Badge(Badge.Kind.ON_DEMAND, null, "ON-DEMAND", R.color.badge_on_demand, "Can be watched on demand: an OnDemandProgram in its availability window whose XML AIT has an application this client can start (clause 5.2.4)"),
         Badge(Badge.Kind.AGE, null, "12+", R.color.badge_age, "Minimum parental age rating of the service (ParentalRating, clause 5.5.28)"),
         Badge(Badge.Kind.PROGRAMME_AGE, null, "16+", R.color.badge_age, "Minimum age rating of the programme on now, from the content guide (clause 6.10.15); it takes precedence over the service's"),
         Badge(Badge.Kind.RESTRICTED, R.drawable.ic_lock, null, R.color.badge_off, "Restricted by your parental setting"),

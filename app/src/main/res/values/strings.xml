@@ -31,6 +31,7 @@
 
     <!-- Home -->
     <string name="badge_live">Live</string>
+    <string name="badge_on_demand">On-demand</string>
     <string name="next_line">Next %1$s \u00b7 %2$s</string>
     <string name="hero_description">Featured: %s</string>
     <string name="now_label">Now: %s</string>
@@ -121,4 +122,16 @@
     <string name="guide_none">No service of this list has a content guide.</string>
     <string name="member_of_index">No. %1$d in %2$s</string>
     <string name="keywords">Keywords: %s</string>
+
+    <!-- More Episodes, Box Sets, on-demand and applications -->
+    <string name="more_episodes">More episodes</string>
+    <string name="box_sets">Box sets</string>
+    <string name="box_set_categories">Box set categories</string>
+    <string name="watch_on_demand">Watch on demand</string>
+    <string name="load_more">Load more</string>
+    <string name="nothing_to_show">Nothing to show</string>
+    <string name="not_available">Not available</string>
+    <string name="programme_unavailable">This programme is not available</string>
+    <string name="restricted_programme">Blocked by your parental setting: rated %d+</string>
+    <string name="close_application">Close the application</string>
 </resources>

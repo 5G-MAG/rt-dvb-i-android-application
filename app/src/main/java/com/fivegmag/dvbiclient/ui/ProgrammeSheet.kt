@@ -13,17 +13,21 @@ import android.app.Activity
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import coil.load
+import com.fivegmag.dvbiclient.BrowseActivity
 import com.fivegmag.dvbiclient.DvbiRepository
 import com.fivegmag.dvbiclient.R
 import com.fivegmag.dvbiclient.Settings
 import com.fivegmag.dvbiclient.guide.GuideEvent
+import com.fivegmag.dvbiclient.guide.OnDemandProgram
 import com.fivegmag.dvbiclient.guide.ProgrammeInfo
 import com.fivegmag.dvbiclient.servicelist.Service
 import com.fivegmag.dvbiclient.servicelist.ServiceListRules
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.ChipGroup
 import java.text.DateFormat
 import java.util.Date
@@ -34,17 +38,31 @@ import java.util.Date
  */
 object ProgrammeSheet {
 
+    private fun button(activity: Activity, parent: LinearLayout, label: Int, icon: Int, filled: Boolean, onClick: () -> Unit): MaterialButton =
+        (LayoutInflater.from(activity).inflate(if (filled) R.layout.view_button_filled else R.layout.view_button_outlined, parent, false) as MaterialButton).also {
+            it.text = activity.getString(label)
+            it.setIconResource(icon)
+            it.setOnClickListener { onClick() }
+        }
+
     /**
      * Requests the programme information of [event] (clause 6.6.2, <ProgramInfoEndpoint>?pid=<program_id>)
      * and shows it; what the schedule carried when the service has no ProgramInfoEndpoint or the
      * request fails.
      */
     fun request(activity: Activity, service: Service, event: GuideEvent) {
-        DvbiRepository.background({ DvbiRepository.guide.programme(service, event.crid) }) { r ->
-            if (activity.isFinishing || activity.isDestroyed) return@background
+        val settings = Settings(activity)
+        DvbiRepository.background({
+            val r = DvbiRepository.guide.programme(service, event.crid)
             val info = r.value ?: event.info
+            // "The OnDemandProgram information provided via this endpoint shall be complete" (clause
+            // 6.6.3); otherwise the schedule's.
+            val od = info?.onDemand ?: event.info?.onDemand
+            Triple(r, info, od?.takeIf { DvbiRepository.guide.onDemandOffered(it, OnDemand.regions(settings), System.currentTimeMillis()) })
+        }) { (r, info, offered) ->
+            if (activity.isFinishing || activity.isDestroyed) return@background
             val fallback = r.value == null && service.guide?.program != null
-            show(activity, service, event, info, Settings(activity).country.ifEmpty { null }, fallback)
+            show(activity, service, event, info, settings.country.ifEmpty { null }, fallback, offered)
         }
     }
 
@@ -52,7 +70,15 @@ object ProgrammeSheet {
      * Shows [info] for [event] of [service]. [fallback] says the programme information request
      * failed and what the schedule carried is shown.
      */
-    fun show(activity: Activity, service: Service, event: GuideEvent, info: ProgrammeInfo?, country: String?, fallback: Boolean): BottomSheetDialog {
+    fun show(
+        activity: Activity,
+        service: Service,
+        event: GuideEvent,
+        info: ProgrammeInfo?,
+        country: String?,
+        fallback: Boolean,
+        onDemand: OnDemandProgram? = null,
+    ): BottomSheetDialog {
         val view = LayoutInflater.from(activity).inflate(R.layout.sheet_programme, null)
         val fmt = DateFormat.getTimeInstance(DateFormat.SHORT)
         val now = System.currentTimeMillis()
@@ -105,6 +131,23 @@ object ProgrammeSheet {
         ServiceBadges.bind(view.findViewById<ChipGroup>(R.id.programmeBadges), badges)
 
         val dialog = BottomSheetDialog(activity)
+        // Watch on demand: an ended programme whose on-demand entry can be offered, as the browser
+        // client's "Watch again"; More episodes when the source has a MoreEpisodesEndpoint (clause 6.7).
+        val actions = view.findViewById<LinearLayout>(R.id.programmeActions)
+        // ON-DEMAND: the programme can be watched on demand (an OnDemandProgram that can be offered).
+        view.findViewById<View>(R.id.programmeOnDemand).visibility = if (onDemand != null && event.end <= now) View.VISIBLE else View.GONE
+        if (onDemand != null && event.end <= now) {
+            actions.addView(button(activity, actions, R.string.watch_on_demand, R.drawable.ic_play_arrow, filled = true) {
+                dialog.dismiss()
+                OnDemand.launch(activity, onDemand, info?.ratings ?: emptyList())
+            })
+        }
+        if (event.crid.isNotEmpty()) BrowseActivity.moreEpisodes(activity, service, event.crid)?.let { intent ->
+            actions.addView(button(activity, actions, R.string.more_episodes, R.drawable.ic_video_library, filled = false) {
+                dialog.dismiss()
+                activity.startActivity(intent)
+            })
+        }
         dialog.setContentView(view)
         dialog.behavior.state = BottomSheetBehavior.STATE_EXPANDED
         dialog.show()

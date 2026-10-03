@@ -224,6 +224,19 @@ Derived from rt-5gms-application fivegmag_5GMSdAwareApplication (5G-MAGflix) res
                 app:icon="@drawable/ic_calendar_view_day"
                 app:iconGravity="textStart" />
 
+            <!-- Box Set Categories of the service's content guide source (clause 6.8.2) -->
+            <Button
+                android:id="@+id/boxSetsButton"
+                style="@style/SettingsButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/box_sets"
+                android:visibility="gone"
+                app:icon="@drawable/ic_video_library"
+                app:iconGravity="textStart"
+                app:iconTint="@color/fivegmag_blue" />
+
             <!-- 5G Broadcast instances -->
             <LinearLayout
                 android:id="@+id/fiveGSection"
