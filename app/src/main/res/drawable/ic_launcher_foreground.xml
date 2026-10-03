@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 License: 5G-MAG Public License (v1.0)
-Author: Daniel Silhavy (5G-MAGflix design), Jordi J. Gimenez (DVB-I adaptation)
-Copyright: (C) 2023-2026 Fraunhofer FOKUS; (C) 2026 5G-MAG Association
+Author: Jordi J. Gimenez (5G-MAG)
+Copyright: (C) 2026 5G-MAG Association
 For full license terms please see the LICENSE file distributed with this
 program. If this file is missing then the license can be retrieved from
-https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
-Derived from rt-5gms-application fivegmag_5GMSdAwareApplication (5G-MAGflix)
-res/drawable/ic_splash_fivegmagflix.xml: its "5G-MAG" (blue) and "flix" (red) letter paths, with
-"DVB-I" added below in white, set in Ubuntu Bold (Ubuntu Font Licence 1.0) as outlines.
-Adaptive icon foreground and splash screen icon: 108dp, the artwork inside the 66dp safe zone.
+https://www.5g-mag.com/license
+The icon of the DVB-I Services over 5G Systems project, as the 5G-MAG website draws it
+(taxonomy.json iconCatalog "device-tv", a Tabler icon, MIT licence): its two paths on a 24 unit grid,
+stroke 2, round caps and joins, scaled by 2 into the 66dp safe zone of the 108dp adaptive icon.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -17,41 +16,21 @@ Adaptive icon foreground and splash screen icon: 108dp, the artwork inside the 6
     android:viewportWidth="108"
     android:viewportHeight="108">
     <group
-        android:scaleX="0.25000"
-        android:scaleY="0.25000"
-        android:translateX="24.0000"
-        android:translateY="27.1250">
-        <path android:fillColor="#00A0D2" android:pathData="M18,10 L46,10 L46,17 L18,17 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M18,10 L25,10 L25,33 L18,33 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M18,30 L42,30 L42,37 L18,37 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M35,37 L42,37 L42,55 L35,55 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M18,48 L42,48 L42,55 L18,55 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M52,10 L82,10 L82,17 L52,17 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M52,10 L59,10 L59,55 L52,55 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M52,48 L82,48 L82,55 L52,55 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M75,32 L82,32 L82,55 L75,55 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M67,32 L82,32 L82,39 L67,39 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M88,29 L98,29 L98,36 L88,36 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M104,10 L111,10 L111,55 L104,55 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M111,10 L122,35 L118,37 L107,12 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M122,35 L133,10 L137,12 L126,37 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M133,10 L140,10 L140,55 L133,55 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M148,55 L155,55 L165,10 L158,10 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M165,10 L172,10 L182,55 L175,55 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M153,34 L177,34 L177,41 L153,41 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M188,10 L218,10 L218,17 L188,17 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M188,10 L195,10 L195,55 L188,55 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M188,48 L218,48 L218,55 L188,55 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M211,32 L218,32 L218,55 L211,55 Z" />
-        <path android:fillColor="#00A0D2" android:pathData="M203,32 L218,32 L218,39 L203,39 Z" />
-        <path android:fillColor="#E50914" android:pathData="M72,80 L79,80 L79,130 L72,130 Z" />
-        <path android:fillColor="#E50914" android:pathData="M72,75 L88,75 L88,80 L72,80 Z" />
-        <path android:fillColor="#E50914" android:pathData="M65,90 L88,90 L88,96 L65,96 Z" />
-        <path android:fillColor="#E50914" android:pathData="M95,75 L102,75 L102,130 L95,130 Z" />
-        <path android:fillColor="#E50914" android:pathData="M110,75 L117,75 L117,82 L110,82 Z" />
-        <path android:fillColor="#E50914" android:pathData="M110,90 L117,90 L117,130 L110,130 Z" />
-        <path android:fillColor="#E50914" android:pathData="M124,90 L131,90 L150,130 L143,130 Z" />
-        <path android:fillColor="#E50914" android:pathData="M143,90 L150,90 L131,130 L124,130 Z" />
-        <path android:fillColor="#FFFFFF" android:pathData="M39.07 205.62Q35.92 205.62 31.89 205.35Q27.86 205.08 24.12 204.27V153.75Q27.86 153 32.04 152.72Q36.22 152.44 39.37 152.44Q48.19 152.44 54.78 155.19Q61.38 157.93 65.05 163.79Q68.71 169.64 68.71 178.96Q68.71 187.93 65.07 193.85Q61.43 199.77 54.78 202.69Q48.13 205.62 39.07 205.62ZM39.67 196.82Q49 196.82 53.56 192.07Q58.11 187.31 58.11 178.96Q58.11 170.33 53.71 165.76Q49.3 161.18 39.97 161.18Q38.15 161.18 36.75 161.26Q35.34 161.35 34.37 161.48V196.58Q35.12 196.65 36.36 196.74Q37.61 196.82 39.67 196.82Z M94.04 205Q91.13 198.77 88.33 192.18Q85.54 185.58 82.89 178.84Q80.25 172.1 77.86 165.57Q75.47 159.04 73.4 153H84.71Q86.38 157.97 88.22 163.33Q90.06 168.68 91.91 174Q93.76 179.32 95.6 184.17Q97.45 189.02 99.14 192.92Q100.77 189.04 102.61 184.2Q104.45 179.36 106.33 174.03Q108.22 168.7 110.06 163.34Q111.9 157.97 113.55 153H124.45Q122.34 159.04 119.95 165.57Q117.56 172.1 114.94 178.81Q112.33 185.53 109.53 192.15Q106.74 198.77 103.83 205Z M147.59 205.62Q145.01 205.62 142.29 205.49Q139.57 205.36 136.82 205.03Q134.07 204.7 131.35 204.14V153.81Q133.62 153.34 136.26 153.04Q138.91 152.74 141.58 152.59Q144.26 152.44 146.54 152.44Q152.94 152.44 157.96 153.76Q162.98 155.08 165.89 158.22Q168.81 161.35 168.81 166.81Q168.81 170.13 167.17 172.72Q165.53 175.3 162.4 176.96Q167.24 178.66 169.3 181.82Q171.36 184.98 171.36 189.49Q171.36 197.5 165.42 201.56Q159.47 205.62 147.59 205.62ZM147.86 197.18Q151.63 197.18 154.58 196.49Q157.54 195.81 159.23 194.09Q160.93 192.38 160.93 189.3Q160.93 185.15 157.93 183.49Q154.93 181.83 149.47 181.83H141.35V196.84Q142.6 196.99 144.27 197.08Q145.94 197.18 147.86 197.18ZM141.35 173.92H147.99Q151.63 173.92 154.03 173.28Q156.43 172.64 157.62 171.16Q158.81 169.68 158.81 167.26Q158.81 163.67 155.99 162.22Q153.17 160.77 148.01 160.77Q146.24 160.77 144.46 160.82Q142.68 160.88 141.35 161.05Z M176.86 187.22V178.29H197.55V187.22Z M205.63 205V153H215.88V205Z" />
+        android:scaleX="2"
+        android:scaleY="2"
+        android:translateX="30"
+        android:translateY="30">
+        <path
+            android:pathData="M3 9a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -9"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="2"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M16 3l-4 4l-4 -4"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="2"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
     </group>
 </vector>

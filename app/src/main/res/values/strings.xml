@@ -1,6 +1,6 @@
 <resources>
     <!-- The launcher label; the full name is app_full_name. -->
-    <string name="app_name">5G-MAGflix DVB-I</string>
+    <string name="app_name">DVB-I App</string>
     <string name="app_full_name">5G-MAGflix for DVB-I</string>
     <string name="logo_text_5gmag">5G-MAG</string>
     <string name="logo_text_flix">flix</string>

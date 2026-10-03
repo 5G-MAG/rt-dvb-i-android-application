@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- The dark surface of 5G-MAGflix's splash screen, behind its blue and red lettering. -->
-    <color name="ic_launcher_background">#121212</color>
+    <color name="ic_launcher_background">#00A0D2</color>
 </resources>
