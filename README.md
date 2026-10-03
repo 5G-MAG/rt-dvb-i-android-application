@@ -272,7 +272,8 @@ This project follows the [Gitflow workflow](https://www.atlassian.com/git/tutori
 The `development` branch of this project serves as an integration branch for new features.
 
 `./gradlew test` runs the JVM unit tests of `dvbi-core` (81 cases), which need no device. The
-activities in `app` have no automated tests.
+activities in `app` have no automated tests. CI runs `./gradlew test assembleDebug` from
+`.github/workflows/test.yml`.
 
 ## Contributing
 
