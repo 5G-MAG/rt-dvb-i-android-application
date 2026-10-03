@@ -35,7 +35,44 @@ data class ProgrammeInfo(
     /** The now/next structural group (clause 6.5.4.4): "now", "later" or "earlier", and its index. */
     val structural: String?,
     val structuralIndex: Int?,
+    /** Title with @type secondary (tables 42, 43). */
+    val secondaryTitle: String? = null,
+    /** Keyword elements (table 43). */
+    val keywords: List<String> = emptyList(),
+    /** MemberOf elements other than the now/next structural groups (table 41), with the group's title when the response has it. */
+    val memberOf: List<Membership> = emptyList(),
+    /** EpisodeOf@crid: Box Set Lists the programme is an episode of (table 41). */
+    val episodeOf: List<String> = emptyList(),
+    /** The OnDemandProgram of the same response whose Program@crid is this programme's (clause 6.6.3, table 52). */
+    val onDemand: OnDemandProgram? = null,
 )
+
+/**
+ * A MemberOf of a ProgramInformation (table 41): the group's CRID, "The @index attribute defines the
+ * programme's position within the list defined by @crid", and the Title of the GroupInformation with
+ * that groupId when the response carries one (clause 6.10.17).
+ */
+data class Membership(val crid: String, val index: Int?, val groupTitle: String?)
+
+/**
+ * OnDemandProgram (clause 6.10.8.2, table 52): ProgramURL is "A URL location of a content
+ * deep-linked XML AIT for the on-demand programme", AuxiliaryURL "A URL location of a Template XML
+ * AIT", and the availability window. Instants in milliseconds since the epoch.
+ */
+data class OnDemandProgram(
+    val serviceIdRef: String,
+    val crid: String,
+    val programUrl: String,
+    val programUrlType: String,
+    val auxiliaryUrl: String?,
+    val start: Long?,
+    val end: Long?,
+    val durationMs: Long,
+    val free: Boolean?,
+) {
+    /** Within StartOfAvailability and EndOfAvailability (table 52) at [ms]. */
+    fun availableAt(ms: Long): Boolean = (start == null || ms >= start) && (end == null || ms < end)
+}
 
 /** A scheduled event joined with its programme information by CRID. */
 data class GuideEvent(val crid: String, val start: Long, val end: Long, val info: ProgrammeInfo?) {
@@ -74,10 +111,11 @@ object GuideParser {
         return ((g(1) * 86400 + g(2) * 3600 + g(3) * 60 + g(4)) * 1000).toLong()
     }
 
-    private fun parseInfo(pi: Element): ProgrammeInfo {
+    private fun parseInfo(pi: Element, groups: Map<String, String> = emptyMap(), onDemand: Map<String, OnDemandProgram> = emptyMap()): ProgrammeInfo {
         val bd = pi.child("BasicDescription") ?: pi
         val titles = bd.children("Title")
         val title = (titles.firstOrNull { (it.attr("type") ?: "main") == "main" } ?: titles.firstOrNull())?.text ?: ""
+        val programId = pi.attr("programId") ?: ""
         // The longest synopsis held; the guide shows one.
         val synopsis = bd.children("Synopsis").map { it.text }.maxByOrNull { it.length } ?: ""
         val genre = bd.child("Genre")?.let { g -> g.child("Name")?.text?.ifEmpty { null } ?: g.attr("href")?.substringAfterLast(':') }
@@ -91,8 +129,10 @@ object GuideParser {
         // MemberOf is a child of ProgramInformation (clause 6.10.4); a structural now/next group
         // gives the position (clause 6.5.4.4).
         val pos = pi.children("MemberOf").firstOrNull { STRUCTURAL.containsKey(it.attr("crid")) }
+        val members = pi.children("MemberOf").filter { !STRUCTURAL.containsKey(it.attr("crid")) && !it.attr("crid").isNullOrEmpty() }
+            .map { m -> val crid = m.attr("crid")!!; Membership(crid, m.attr("index")?.trim()?.toIntOrNull(), groups[crid]) }
         return ProgrammeInfo(
-            programId = pi.attr("programId") ?: "",
+            programId = programId,
             title = title,
             synopsis = synopsis,
             genre = genre,
@@ -100,8 +140,41 @@ object GuideParser {
             ratings = ratings,
             structural = pos?.let { STRUCTURAL[it.attr("crid")] },
             structuralIndex = pos?.let { it.attr("index")?.toIntOrNull() ?: 1 },
+            secondaryTitle = titles.firstOrNull { it.attr("type") == "secondary" }?.text?.ifEmpty { null },
+            keywords = bd.children("Keyword").map { it.text }.filter { it.isNotEmpty() },
+            memberOf = members,
+            episodeOf = pi.children("EpisodeOf").mapNotNull { it.attr("crid")?.ifEmpty { null } },
+            onDemand = onDemand[programId],
         )
     }
+
+    // GroupInformation@groupId to its Title, from the GroupInformationTable of a response (clause 6.10.17).
+    private fun groupTitles(root: Element): Map<String, String> =
+        root.descendants("GroupInformation").mapNotNull { gi ->
+            val id = gi.attr("groupId") ?: return@mapNotNull null
+            val bd = gi.child("BasicDescription") ?: gi
+            val titles = bd.children("Title")
+            val t = (titles.firstOrNull { (it.attr("type") ?: "main") == "main" } ?: titles.firstOrNull())?.text ?: ""
+            if (t.isEmpty()) null else id to t
+        }.toMap()
+
+    /** The OnDemandProgram elements of a response by Program@crid (clause 6.10.8.2, table 52). */
+    private fun onDemandPrograms(root: Element): Map<String, OnDemandProgram> =
+        root.descendants("OnDemandProgram").mapNotNull { od ->
+            val crid = od.child("Program")?.attr("crid") ?: return@mapNotNull null
+            val pu = od.child("ProgramURL") ?: return@mapNotNull null
+            crid to OnDemandProgram(
+                serviceIdRef = od.attr("serviceIDRef") ?: "",
+                crid = crid,
+                programUrl = pu.text,
+                programUrlType = pu.attr("contentType") ?: "",
+                auxiliaryUrl = od.child("AuxiliaryURL")?.text?.ifEmpty { null },
+                start = ServiceListParser.parseInstant(od.childText("StartOfAvailability")),
+                end = ServiceListParser.parseInstant(od.childText("EndOfAvailability")),
+                durationMs = parseDuration(od.childText("PublishedDuration")),
+                free = od.child("Free")?.attr("value")?.trim()?.let { it == "true" || it == "1" },
+            )
+        }.toMap()
 
     /**
      * The events of a schedule or now/next response, joined with their ProgramInformation by CRID
@@ -113,7 +186,9 @@ object GuideParser {
      */
     fun parseSchedule(text: String): List<GuideEvent> {
         val root = root(text)
-        val info = root.descendants("ProgramInformation").associate { (it.attr("programId") ?: "") to parseInfo(it) }
+        val groups = groupTitles(root)
+        val onDemand = onDemandPrograms(root)
+        val info = root.descendants("ProgramInformation").associate { (it.attr("programId") ?: "") to parseInfo(it, groups, onDemand) }
         val events = ArrayList<GuideEvent>()
         for (ev in root.descendants("ScheduleEvent") + root.descendants("BroadcastEvent")) {
             val crid = ev.child("Program")?.attr("crid") ?: ""
@@ -142,8 +217,11 @@ object GuideParser {
     }
 
     /** The ProgramInformation for [pid] in a programme information response (clause 6.6.3), or null. */
-    fun parseProgramme(text: String, pid: String): ProgrammeInfo? =
-        root(text).descendants("ProgramInformation").firstOrNull { it.attr("programId") == pid }?.let { parseInfo(it) }
+    fun parseProgramme(text: String, pid: String): ProgrammeInfo? {
+        val root = root(text)
+        return root.descendants("ProgramInformation").firstOrNull { it.attr("programId") == pid }
+            ?.let { parseInfo(it, groupTitles(root), onDemandPrograms(root)) }
+    }
 
     /** Now and next of [events] at [nowMs]: from the structural groups when present (clause 6.5.4.4), else by time. */
     fun nowNext(events: List<GuideEvent>, nowMs: Long): Pair<GuideEvent?, GuideEvent?> {

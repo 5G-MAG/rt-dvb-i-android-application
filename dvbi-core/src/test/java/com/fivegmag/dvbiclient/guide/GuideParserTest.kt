@@ -83,6 +83,35 @@ class GuideParserTest {
     }
 
     @Test
+    fun clause6_6_3DetailedProgrammeInformation() {
+        val info = GuideParser.parseProgramme(Fixtures.read("programme-detail.xml"), "crid://example.com/prog/7")!!
+        assertEquals("Signals", info.title)
+        assertEquals("table 43, Title@type secondary", "The relay station", info.secondaryTitle)
+        assertEquals("the long synopsis", "A night at the mast with the engineers who keep the multiplex on air until dawn.", info.synopsis)
+        assertEquals(listOf("ENGINEERING", "Staff pick"), info.keywords)
+        assertEquals("table 41 MemberOf with the GroupInformation title of clause 6.10.17",
+            listOf(Membership("crid://example.com/series/signals", 3, "Signals, series 2")), info.memberOf)
+        assertEquals(listOf("crid://example.com/boxsets/signals"), info.episodeOf)
+        assertEquals(listOf(ParentalRating(6, emptyList())), info.ratings)
+    }
+
+    @Test
+    fun table52OnDemandProgramJoinedByCrid() {
+        val od = GuideParser.parseProgramme(Fixtures.read("programme-detail.xml"), "crid://example.com/prog/7")!!.onDemand!!
+        assertEquals("tag:sample,2024:service:a", od.serviceIdRef)
+        assertEquals("http://192.168.1.202:4000/ait/program.aitx?pid=7", od.programUrl)
+        assertEquals("application/vnd.dvb.ait+xml", od.programUrlType)
+        assertEquals("http://192.168.1.202:4000/ait/template.aitx", od.auxiliaryUrl)
+        assertEquals(45 * 60_000L, od.durationMs)
+        assertEquals(true, od.free)
+        assertEquals(false, od.availableAt(t("2026-10-01T19:59:59Z")))
+        assertEquals(true, od.availableAt(t("2026-10-01T20:00:00Z")))
+        assertEquals("EndOfAvailability is the first instant no longer available", false, od.availableAt(t("2026-10-31T20:00:00Z")))
+        assertNull("no OnDemandProgram in a schedule without one", GuideParser.parseSchedule(Fixtures.read("schedule.xml"))[0].info?.onDemand)
+        assertEquals("no MemberOf", emptyList<Membership>(), GuideParser.parseSchedule(Fixtures.read("schedule.xml"))[0].info?.memberOf)
+    }
+
+    @Test
     fun notAGuideResponseIsRefused() {
         try {
             GuideParser.parseSchedule("<ServiceList xmlns=\"urn:dvb:metadata:servicediscovery:2024\"/>")
