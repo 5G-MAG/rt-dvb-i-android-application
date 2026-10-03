@@ -1,0 +1,25 @@
+// The UI-free DVB-I logic (ETSI TS 103 770 V1.2.1): service list parsing, LCN, instance selection,
+// the HTTP rules of clause 4.3, content guide requests and parsing, registry discovery, the MBMS URL
+// check and the MBMS Client interface. No Activities and no Media3: a front end (this repository's
+// app, or another application) depends on this module and brings its own user interface and player.
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.fivegmag.dvbiclient.core'
+    compileSdk 37
+
+    defaultConfig {
+        minSdk 29
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+}

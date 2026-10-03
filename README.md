@@ -48,6 +48,21 @@ The Gradle layout, plugin and library versions follow the 5GMSd-Aware Applicatio
 This repository started as the folder `fivegmag_DVBIClient` of rt-5gms-application (pull request
 [#55](https://github.com/5G-MAG/rt-5gms-application/pull/55)); its history was moved here unchanged.
 
+### Structure
+
+| Module | What it holds |
+| --- | --- |
+| `dvbi-core/` | An Android library with the DVB-I logic and no user interface: service list parsing, channel numbering (LCN), instance selection, the HTTP rules of clause 4.3, content guide requests and parsing, registry discovery, the `mbms://` URL check, and the MBMS Client interface with its `NoMbmsClient` default. No Activities, no Media3. |
+| `app/` | The DVB-I client built on `dvbi-core`: channel list, player (Media3 ExoPlayer), settings, schedule, and the HTTP transport (OkHttp). |
+
+The Kotlin packages are those of the single-module project (`com.fivegmag.dvbiclient.*`); the
+library's Android namespace, `com.fivegmag.dvbiclient.core`, is new. It names the library's generated
+build classes and changes no Kotlin package.
+
+`dvbi-core` is what a different front end reuses. 5G additions plug in here rather than living on
+branches; see [5G Broadcast and the MBMS Client](#5g-broadcast-and-the-mbms-client) and
+[5G Media Streaming](#5g-media-streaming).
+
 ### What it does
 
 | Function | ETSI TS 103 770 V1.2.1 |
@@ -203,7 +218,7 @@ APK. HTTPS works towards any host.
 
 ## 5G Broadcast and the MBMS Client
 
-`mbms/IMbmsStreamingClient.kt` is the part of the TS 26.347 Media Streaming Service API (clause 6.3, method
+`dvbi-core/src/main/java/com/fivegmag/dvbiclient/mbms/IMbmsStreamingClient.kt` is the part of the TS 26.347 Media Streaming Service API (clause 6.3, method
 names of the annex B.3 IDL) this client calls: `registerStreamingApp`, `getStreamingServices`,
 `startStreamingService`, `stopStreamingService`, `deregisterStreamingApp`, and the callbacks
 `registerStreamingResponse`, `serviceStarted`, `streamingServiceError` and `streamingServiceListUpdate`. The
@@ -212,13 +227,33 @@ client registers with the service class of TS 103 770 table 106, `urn:dvb:metada
 An Android MBMS Client implements the interface and is set in `DvbiSession.mbmsClient`; the player then starts
 the User Service whose `serviceId` is the locator's prefix and plays its `ManifestURI`.
 
+`DvbiSession` and the activities are in `app`; the interface, `NoMbmsClient`, the locator check and the
+choice of entry point (`MbmsReception`) are in `dvbi-core`, so an MBMS Client is supplied without
+changing either module's DVB-I logic.
+
+## 5G Media Streaming
+
+Nothing for 5G Media Streaming (5GMS) is built here. A 5GMS front end would be another application
+that depends on `dvbi-core` for the DVB-I logic and brings its own 5GMS client, for example
+[rt-5gms-application](https://github.com/5G-MAG/rt-5gms-application).
+
+5GMS Service Access Information has no element in a DVB-I service list or playlist. ETSI TR 103 972
+(V1.1.1, 2023-07) records both as gaps in existing specifications:
+
+- ETSI TR 103 972 V1.1.1 clause 6.3.4, gap 1: "DVB-I service instance metadata needs to be extended
+  to include baseline 5GMS Service Access Information parameters."
+- ETSI TR 103 972 V1.1.1 clause 6.3.4, gap 2: "the DVB-I Playlist entry element needs to be extended
+  to include baseline 5GMS Service Access Information parameters."
+
+ETSI TS 103 770 V1.2.1 defines no such element, so this client invents none.
+
 ## Development
 
 This project follows the [Gitflow workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 The `development` branch of this project serves as an integration branch for new features.
 
-`./gradlew test` runs the JVM unit tests (81 cases), which need no device. The activities have no
-automated tests.
+`./gradlew test` runs the JVM unit tests of `dvbi-core` (81 cases), which need no device. The
+activities in `app` have no automated tests.
 
 ## Contributing
 

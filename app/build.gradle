@@ -37,6 +37,8 @@ android {
 }
 
 dependencies {
+    implementation project(':dvbi-core')
+
     implementation 'androidx.media3:media3-exoplayer:1.10.0'
     implementation 'androidx.media3:media3-exoplayer-dash:1.10.0'
     implementation 'androidx.media3:media3-exoplayer-hls:1.10.0'
@@ -50,8 +52,6 @@ dependencies {
     // Image loading (service logos)
     implementation 'io.coil-kt:coil:2.7.0'
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-
-    testImplementation 'junit:junit:4.13.2'
 }
 
 // Hosts this build lets the app reach over plain HTTP. ETSI TS 103 770 V1.2.1 clause 7.3 allows HTTP
