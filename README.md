@@ -86,13 +86,12 @@ as `dvbi`. See [5G Broadcast and the MBMS Client](#5g-broadcast-and-the-mbms-cli
 | Parental restriction by age, the programme's rating taking precedence over the service's | clause 5.5.28 |
 | Access services of each instance's media shown as badges: subtitles (carriage, purpose, language; unknown terms taken as unavailable), audio description, sign language, dialogue enhancement, spoken subtitles | clause 4.5.2 |
 | More Episodes and Box Sets (categories, lists, contents), one page at a time with the pagination links; on-demand programmes offered when available and playable by their Template XML AIT, and started from their content deep-linked XML AIT | clauses 5.2.4, 6.7, 6.8, 6.9; table 52 |
-| Linked applications: an application controlling media presentation replaces the media; an application with media in parallel, the home page, or the application for outside the availability period opened on request; XML AIT application selection with the contextual parameters | clauses 5.2.3, 5.2.4.2, 5.2.4.4.6 |
+| Linked applications: an application controlling media presentation replaces the media; an application with media in parallel, the home page, or the application for outside the availability period opened on request; XML AIT application selection, the platform profile included, with the contextual parameters | clauses 5.2.3, 5.2.4.2, 5.2.4.4.6; ETSI TS 102 796 V1.8.1 table 5 |
 | DVB-I Playlists from a playlist server, their entries played in order, then the content finished image | clauses 5.2.7.2, 5.2.7.3, 5.7.1 |
 
 ### Not implemented
 
-HbbTV applications (the application engine starts HTML pages, and the XML AIT's platform profile criterion
-of ETSI TS 102 796 table 5 is not applied), application signalling inside the media (clause 5.2.3.3), Restart
+HbbTV applications (the application engine starts HTML pages), application signalling inside the media (clause 5.2.3.3), Restart
 links (clause 5.2.4.3), credits (their display names are table 69), the daily service list update (clause
 5.1.7), a PIN to unlock restricted content, and re-authentication after 401 or 403.
 

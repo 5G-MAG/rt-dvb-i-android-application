@@ -105,6 +105,12 @@ class ContentGuideTest {
         template = Fixtures.read("xml-ait.xml").replace("text/html", "application/vnd.dvbi.non")
         val g2 = ContentGuide(DvbiHttpClient(t))
         assertFalse(g2.onDemandOffered(od, emptyList(), inWindow))
+
+        // Nor one whose HTML pages all signal a platform profile this client does not launch (clause 5.2.4.2).
+        template = Fixtures.read("xml-ait.xml").replace("<mhp:profile>0</mhp:profile>", "<mhp:profile>2</mhp:profile>")
+            .replace("<mhp:profile>0000</mhp:profile>", "<mhp:profile>0001</mhp:profile>")
+        val g3 = ContentGuide(DvbiHttpClient(t))
+        assertFalse(g3.onDemandOffered(od, emptyList(), inWindow))
     }
 
     @Test

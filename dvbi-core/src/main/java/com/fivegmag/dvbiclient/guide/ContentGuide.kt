@@ -102,7 +102,8 @@ class ContentGuide(private val http: DvbiHttpClient) {
     /**
      * Whether the Template XML AIT at [url] lists an application this client can run: "the client
      * device shall assume it can run the application if any of the applications listed meet the
-     * compatibility criteria" (clause 5.2.4.4.1), the applicationLocation not being used. Results are
+     * compatibility criteria" (clause 5.2.4.4.1), those of clause 5.2.4.2, the applicationLocation
+     * not being used. Results are
      * kept by URL ("Client devices shall perform a textual comparison of the Template XML AIT URL")
      * until the expiry of clause 5.2.4.4.5; a result past its expiry is still used while a new one
      * cannot be had.
@@ -112,7 +113,7 @@ class ContentGuide(private val http: DvbiHttpClient) {
         if (known != null && known.second > nowMs) return known.first
         val r = ait(url, regions, LAUNCH_LOCATION_EPG)
         val apps = r.value ?: return known?.first ?: false
-        val ok = apps.any { it.type.trim().lowercase() in XmlAit.STARTABLE_TYPES }
+        val ok = apps.any { XmlAit.compatible(it) }
         synchronized(templates) { templates[url] = ok to XmlAit.templateExpiry(nowMs, r.http?.maxAgeMs, r.http?.expires) }
         return ok
     }
