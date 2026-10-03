@@ -10,6 +10,7 @@ https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
 package com.fivegmag.dvbiclient.discovery
 
 import com.fivegmag.dvbiclient.guide.GuideRequests
+import com.fivegmag.dvbiclient.servicelist.Image
 import com.fivegmag.dvbiclient.xml.Xml
 import com.fivegmag.dvbiclient.xml.XmlFormatException
 import com.fivegmag.dvbiclient.xml.attr
@@ -19,6 +20,7 @@ import com.fivegmag.dvbiclient.xml.childElements
 import com.fivegmag.dvbiclient.xml.childText
 import com.fivegmag.dvbiclient.xml.children
 import com.fivegmag.dvbiclient.xml.descendant
+import com.fivegmag.dvbiclient.xml.descendants
 import com.fivegmag.dvbiclient.xml.local
 import com.fivegmag.dvbiclient.xml.text
 
@@ -82,9 +84,11 @@ object Discovery {
                         regulatorListFlag = o.boolAttr("regulatorListFlag", false),
                         languages = o.children("Language").map { it.text }.filter { it.isNotEmpty() },
                         targetCountries = o.children("TargetCountry").flatMap { it.text.split(',') }.map { it.trim() }.filter { it.isNotEmpty() },
-                        logo = o.children("RelatedMaterial")
-                            .firstOrNull { it.child("HowRelated")?.attr("href") == SERVICE_LIST_LOGO }
-                            ?.descendant("MediaUri")?.text?.ifEmpty { null },
+                        // The first service list logo in a format this client shows (Image.FORMATS, clause 5.2.8.3).
+                        logo = Image.firstShown(o.children("RelatedMaterial")
+                            .filter { it.child("HowRelated")?.attr("href") == SERVICE_LIST_LOGO }
+                            .flatMap { it.descendants("MediaUri") }
+                            .map { Image(it.text, it.attr("contentType") ?: "") })?.url,
                         providerName = providerName,
                         delivery = delivery,
                     )

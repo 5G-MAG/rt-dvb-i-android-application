@@ -51,6 +51,10 @@ class GuideParserTest {
         val info = GuideParser.parseSchedule(Fixtures.read("now-next.xml"))[0].info!!
         assertEquals("Factual", info.genre)
         assertEquals("http://192.168.1.202:4000/logos/now.png", info.image)
+        val gif = GuideParser.parseSchedule(Fixtures.read("now-next.xml").replace(
+            """<MediaUri contentType="image/png">http://192.168.1.202:4000/logos/now.png</MediaUri>""",
+            """<MediaUri contentType="image/gif">http://192.168.1.202:4000/logos/now.gif</MediaUri>"""))[0].info!!
+        assertNull("clause 5.2.8.3: a GIF promotional still is not shown", gif.image)
         assertEquals(listOf(ParentalRating(12, emptyList()), ParentalRating(16, listOf("DEU", "AUT"))), info.ratings)
         assertEquals("table 61 by country", 16, ServiceListRules.minimumAgeFor(info.ratings, "DEU"))
         assertEquals("now", info.structural)

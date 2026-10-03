@@ -81,8 +81,21 @@ class ServiceListParserTest {
     @Test
     fun clause5_2_6_2ServiceLogoJpegOrPngFirst() {
         assertEquals(Image("http://192.168.1.202:4000/logos/hybrid.jpg", "image/jpeg"), fiveG.svc(":hybrid").logo)
-        assertEquals("only SVG signalled: kept", "image/svg+xml", sample.svc(":a").logo?.contentType)
         assertNull(fiveG.svc(":5gonly").logo)
+    }
+
+    @Test
+    fun clause5_2_8_3OnlyJpegAndPngImagesAreShown() {
+        assertNull("only SVG signalled: none shown", sample.svc(":a").logo)
+        val svg = """<tva:MediaUri contentType="image/svg+xml">https://example.com/logos/svc-a</tva:MediaUri>"""
+        fun logoOf(uris: String) = ServiceListParser.parse(Fixtures.read("service-list.xml").replace(svg, uris)).svc(":a").logo
+        assertEquals("GIF passed over for the PNG", Image("https://example.com/a.png", "image/png"),
+            logoOf("""<tva:MediaUri contentType="image/gif">https://example.com/a.gif</tva:MediaUri><tva:MediaUri contentType="image/png">https://example.com/a.png</tva:MediaUri>"""))
+        assertNull("GIF only", logoOf("""<tva:MediaUri contentType="image/gif">https://example.com/a.gif</tva:MediaUri>"""))
+        assertNull("no MediaUri@contentType", logoOf("""<tva:MediaUri>https://example.com/a.png</tva:MediaUri>"""))
+        assertEquals("type compared without case", "IMAGE/JPEG", logoOf("""<tva:MediaUri contentType="IMAGE/JPEG">https://example.com/a.jpg</tva:MediaUri>""")?.contentType)
+        assertTrue(Image.shown("image/png") && Image.shown("image/jpeg"))
+        assertFalse(Image.shown("image/gif") || Image.shown("image/svg+xml") || Image.shown("image/webp") || Image.shown(null))
     }
 
     @Test

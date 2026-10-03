@@ -48,6 +48,10 @@ class DiscoveryTest {
         assertEquals(listOf(DeliveryType("DASHDelivery", false), DeliveryType("DVBTDelivery", true)), o[1].delivery)
         assertEquals("several ServiceListURI: fallbacks in order", listOf("https://a.example/list.xml", "https://b.example/list.xml"), o[2].urls)
         assertEquals("https://a.example/logo.png", o[2].logo)
+        val gif = Discovery.parse(Fixtures.read("registry-response.xml").replace(
+            """<tva:MediaUri contentType="image/png">https://a.example/logo.png</tva:MediaUri>""",
+            """<tva:MediaUri contentType="image/gif">https://a.example/logo.gif</tva:MediaUri>"""))
+        assertNull("clause 5.2.8.3: a GIF service list logo is not shown", gif[2].logo)
         try {
             Discovery.parse("<html/>")
             fail("accepted")

@@ -69,7 +69,28 @@ data class ContentGuideSource(
 )
 
 /** An image signalled in RelatedMaterial, with its MediaUri@contentType. */
-data class Image(val url: String, val contentType: String)
+data class Image(val url: String, val contentType: String) {
+    companion object {
+        /**
+         * The image formats this client shows. ETSI TS 103 770 V1.2.1 clause 5.2.8.3: "A Content
+         * Guide Server shall return an image of the required dimensions in JPEG or PNG format as
+         * specified in clause 7.1.1 of ETSI TS 102 796 [21], with the exception that GIF images are
+         * not supported. The format shall be specified in the MediaUri@contentType attribute.", and
+         * "All images shall meet the following restrictions" with "Format: JPEG or PNG". The MIME
+         * types are those of OIPF Release 2 Volume 2 V2.3 clauses 9.1.1 and 9.1.3, to which ETSI
+         * TS 102 796 V1.8.1 clause 7.1.1 refers: "The mime type of "image/jpeg" shall be used for
+         * compliant JPEG images." and "The mime type of "image/png" shall be used for compliant PNG
+         * images."
+         */
+        val FORMATS = setOf("image/jpeg", "image/png")
+
+        /** Whether [contentType] (MediaUri@contentType) is one of [FORMATS]; an absent type is not. */
+        fun shown(contentType: String?): Boolean = (contentType ?: "").substringBefore(';').trim().lowercase() in FORMATS
+
+        /** The first of [images] in a format this client shows, or null. */
+        fun firstShown(images: List<Image>): Image? = images.firstOrNull { it.url.isNotEmpty() && shown(it.contentType) }
+    }
+}
 
 /** One Service (clause 5.5.2, table 15). */
 data class Service(

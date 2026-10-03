@@ -149,10 +149,9 @@ object ServiceListParser {
             .filter { it.url.isNotEmpty() }
 
     // Clause 5.2.6.2: "At least one service logo shall be provided with the Media Type image/jpeg or
-    // image/png for compatibility purposes". This client renders those two; another format is used
-    // only when no JPEG or PNG is signalled.
-    private fun pickLogo(images: List<Image>): Image? =
-        images.firstOrNull { it.contentType.lowercase() in setOf("image/jpeg", "image/png") } ?: images.firstOrNull()
+    // image/png for compatibility purposes". Only those two are shown (Image.FORMATS, clause
+    // 5.2.8.3); a logo in any other format is left out.
+    private fun pickLogo(images: List<Image>): Image? = Image.firstShown(images)
 
     // The linked applications of [parent] (clause 5.2.3.1): RelatedMaterial with a HowRelated@href of
     // LinkedApplicationCS:2019 and its first MediaUri.
@@ -165,7 +164,7 @@ object ServiceListParser {
 
     // Clause 5.2.7.3, HowRelatedCS:2021:1000.2: "At least one content finished image shall be
     // provided with the Media Type image/jpeg or image/png for compatibility purposes"; one of those
-    // is taken, else the first.
+    // is taken, else none.
     private fun contentFinished(parent: Element): Image? = pickLogo(relatedImages(parent, CONTENT_FINISHED))
 
     // ServiceName in the preferred language, else the one without xml:lang, else the first.

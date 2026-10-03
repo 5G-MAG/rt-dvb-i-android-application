@@ -9,6 +9,7 @@ https://drive.google.com/file/d/1cinCiA778IErENZ3JN52VFW-1ffHpx7Z/view
 
 package com.fivegmag.dvbiclient.guide
 
+import com.fivegmag.dvbiclient.servicelist.Image
 import com.fivegmag.dvbiclient.servicelist.ParentalRating
 import com.fivegmag.dvbiclient.servicelist.ServiceListParser
 import com.fivegmag.dvbiclient.xml.Xml
@@ -155,9 +156,7 @@ object GuideParser {
         // The longest synopsis held; the guide shows one.
         val synopsis = bd.children("Synopsis").map { it.text }.maxByOrNull { it.length } ?: ""
         val genre = bd.child("Genre")?.let { g -> g.child("Name")?.text?.ifEmpty { null } ?: g.attr("href")?.substringAfterLast(':') }
-        val image = bd.children("RelatedMaterial")
-            .firstOrNull { it.child("HowRelated")?.attr("href") == PROMOTIONAL_STILL }
-            ?.descendant("MediaUri")?.text?.ifEmpty { null }
+        val image = promotionalStill(bd)
         val ratings = bd.children("ParentalGuidance").mapNotNull { pg ->
             val age = pg.descendant("MinimumAge")?.text?.toIntOrNull() ?: return@mapNotNull null
             ParentalRating(age, pg.childText("CountryCodes").split(',').map { it.trim() }.filter { it.isNotEmpty() })
@@ -259,9 +258,11 @@ object GuideParser {
             ?.let { parseInfo(it, groupTitles(root), onDemandPrograms(root)) }
     }
 
-    private fun promotionalStill(bd: Element): String? = bd.children("RelatedMaterial")
-        .firstOrNull { it.child("HowRelated")?.attr("href") == PROMOTIONAL_STILL }
-        ?.descendant("MediaUri")?.text?.ifEmpty { null }
+    // The first promotional still in a format this client shows (Image.FORMATS, clause 5.2.8.3).
+    private fun promotionalStill(bd: Element): String? = Image.firstShown(bd.children("RelatedMaterial")
+        .filter { it.child("HowRelated")?.attr("href") == PROMOTIONAL_STILL }
+        .flatMap { it.descendants("MediaUri") }
+        .map { Image(it.text, it.attr("contentType") ?: "") })?.url
 
     /**
      * A More Episodes or Box Set response (clauses 6.7.3, 6.8.2.3, 6.8.3.3, 6.8.4.3): its programmes
