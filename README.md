@@ -1,13 +1,12 @@
 <p align="center">
-  <img src=".github/banner.svg" width="100%" alt="Reference Tools · DVB-I Services over 5G Systems: DVB-I Android Application">
+  <img src=".github/banner.svg" width="100%" alt="Reference Tools · DVB-I Services over 5G Systems: DVB-I over 5G Reference App">
 </p>
 
-<h1 align="center">5G-MAGflix for DVB-I</h1>
+<h1 align="center">DVB-I over 5G Reference App</h1>
 
 <p align="center">
   A native Android DVB-I client that discovers a service list, presents its channels with their
-  content guide, and plays them with Media3 ExoPlayer, per ETSI TS 103 770, in the design of
-  5G-MAGflix.
+  content guide, and plays them with Media3 ExoPlayer, per ETSI TS 103 770.
 </p>
 
 <p align="center">

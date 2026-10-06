@@ -1,11 +1,10 @@
 <resources>
     <!-- The launcher label; the full name is app_full_name. -->
-    <string name="app_name">DVB-I App</string>
-    <string name="app_full_name">5G-MAGflix for DVB-I</string>
+    <string name="app_name">DVB-I over 5G</string>
+    <string name="app_full_name">DVB-I over 5G Reference App</string>
     <string name="logo_5g_mag">5G-MAG</string>
-    <string name="logo_text_5gmag">5G-MAG</string>
-    <string name="logo_text_flix">flix</string>
-    <string name="logo_text_dvbi">\u0020for DVB-I</string>
+    <string name="logo_text_dvbi">DVB-I over 5G</string>
+    <string name="logo_text_reference">\u0020Reference App</string>
     <string name="no_service_list">No service list loaded</string>
     <string name="badge_5g">5G Broadcast</string>
     <string name="service_not_found">This service is not in the installed service list.</string>

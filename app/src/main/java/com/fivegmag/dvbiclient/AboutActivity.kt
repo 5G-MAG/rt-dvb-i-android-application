@@ -38,12 +38,10 @@ class AboutActivity : AppCompatActivity() {
         findViewById<MaterialToolbar>(R.id.aboutToolbar).setNavigationOnClickListener { finish() }
 
         val name = getString(R.string.app_full_name)
-        val part1 = getString(R.string.logo_text_5gmag)
-        val part2 = getString(R.string.logo_text_flix)
+        val part1 = getString(R.string.logo_text_dvbi)
         findViewById<TextView>(R.id.appNameText).text = SpannableString(name).also {
-            if (name.startsWith(part1 + part2)) {
+            if (name.startsWith(part1)) {
                 it.setSpan(ForegroundColorSpan(getColor(R.color.fivegmag_blue)), 0, part1.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                it.setSpan(ForegroundColorSpan(getColor(R.color.flix_red)), part1.length, part1.length + part2.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
         findViewById<TextView>(R.id.versionNumberView).text =
