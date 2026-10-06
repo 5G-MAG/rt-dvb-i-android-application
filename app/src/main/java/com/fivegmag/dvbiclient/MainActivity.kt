@@ -107,13 +107,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // The application's name: "DVB-I over 5G" in 5G-MAG blue, then "Reference App".
+    // "5G-MAG" in 5G-MAG blue and "flix" in red, as 5G-MAGflix's logo text, then "for DVB-I".
     private fun setupLogo() {
-        val part1 = getString(R.string.logo_text_dvbi)
-        val full = part1 + getString(R.string.logo_text_reference)
+        val part1 = getString(R.string.logo_text_5gmag)
+        val part2 = getString(R.string.logo_text_flix)
+        val full = part1 + part2 + getString(R.string.logo_text_dvbi)
         val spannable = SpannableString(full)
+        val flixEnd = part1.length + part2.length
         spannable.setSpan(ForegroundColorSpan(getColor(R.color.fivegmag_blue)), 0, part1.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        spannable.setSpan(ForegroundColorSpan(getColor(R.color.on_surface_primary)), part1.length, full.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        spannable.setSpan(ForegroundColorSpan(getColor(R.color.flix_red)), part1.length, flixEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        spannable.setSpan(ForegroundColorSpan(getColor(R.color.on_surface_primary)), flixEnd, full.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         findViewById<TextView>(R.id.logoText).also {
             it.text = spannable
             it.contentDescription = getString(R.string.app_full_name)

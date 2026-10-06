@@ -41,6 +41,7 @@ A DVB-I client for Android: it loads a service list, from a URL or picked from a
 Registry, lists the channels with now/next and a programme guide, and plays the selected service.
 It is used with the service list and content guide of `rt-dvb-i-application-provider` and the
 registry of `rt-dvb-i-service-list-registry`; `rt-dvb-i-examples` runs them together.
+On the phone, the app is branded *5G-MAGflix for DVB-I*.
 
 ## Specification
 
