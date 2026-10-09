@@ -194,6 +194,11 @@ Until the adapters are implemented, `dvbiMbms` and `dvbi5gms` behave as `dvbi`.
 
 ## Credits
 
+This project continues the DVB-I client contributed by Dolby to 5G-MAG/rt-5gms-application, in
+`fivegmag_ExoDvbi_player`, by Giuseppe Crisci and kkrau: a WebView front end for the DVB-I Reference
+Client plus an ExoPlayer patch. That history is preserved here, and the directory is kept as it was
+contributed. This app replaces the WebView front end with a native Android client.
+
 The user interface is based on the design of 5G-MAGflix, the 5GMSd Aware Application in
 5G-MAG/rt-5gms-application, by Daniel Silhavy (Fraunhofer FOKUS):
 <https://github.com/5G-MAG/rt-5gms-application>. The files derived from it carry its author and
