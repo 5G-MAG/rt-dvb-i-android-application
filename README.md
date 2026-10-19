@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/banner.svg" width="100%" alt="Reference Tools · DVB-I Services over 5G Systems: DVB-I over 5G Reference App">
+  <img src=".github/banner.svg" width="100%" alt="Reference Tools · DVB-I over 5G Systems: DVB-I over 5G Reference App">
 </p>
 
 <h1 align="center">DVB-I over 5G Reference App</h1>
@@ -10,8 +10,7 @@
 </p>
 
 <p align="center">
-  <img alt="Status: under development"
-    src="https://img.shields.io/badge/Status-Under_Development-yellow">
+  <img alt="Status" src="https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.5g-mag.com%2Fbadges%2Fstatus%2Frt-dvb-i-android-application.json">
   <a href="https://github.com/5G-MAG/rt-dvb-i-android-application/releases"><img alt="Version"
     src="https://img.shields.io/github/v/release/5G-MAG/rt-dvb-i-android-application?label=Version&sort=semver"></a>
   <a href="LICENSE"><img alt="License: 5G-MAG Public License v1.0"
@@ -33,7 +32,7 @@
 | **Implements** | ETSI TS 103 770 V1.2.1 (2024-09), *Digital Video Broadcasting (DVB); Service Discovery and Programme Metadata for DVB-I*, client side |
 | **Runs on** | Android 10 (API level 29) or newer |
 | **Plays** | DASH, HLS and DVB-I Playlists over HTTP, via Media3 ExoPlayer 1.10.0; HTML applications and on-demand players in a WebView |
-| **Part of** | [DVB-I Services over 5G Systems](https://www.5g-mag.com/reference-tools/dvb-i), alongside [rt-dvb-i-application](https://github.com/5G-MAG/rt-dvb-i-application) (the browser client), [rt-dvb-i-application-provider](https://github.com/5G-MAG/rt-dvb-i-application-provider) (the list and guide), [rt-dvb-i-service-list-registry](https://github.com/5G-MAG/rt-dvb-i-service-list-registry) (discovery), [rt-dvb-i-examples](https://github.com/5G-MAG/rt-dvb-i-examples) (runnable demos) and [rt-5gms-application](https://github.com/5G-MAG/rt-5gms-application) (the Exo DVB-I Player) |
+| **Part of** | [DVB-I over 5G Systems](https://www.5g-mag.com/reference-tools/dvb-i/), alongside [rt-5gms-application](https://github.com/5G-MAG/rt-5gms-application), [rt-dvb-i-application](https://github.com/5G-MAG/rt-dvb-i-application), [rt-dvb-i-application-provider](https://github.com/5G-MAG/rt-dvb-i-application-provider), [rt-dvb-i-examples](https://github.com/5G-MAG/rt-dvb-i-examples), [rt-dvb-i-service-list-registry](https://github.com/5G-MAG/rt-dvb-i-service-list-registry) |
 
 ## Introduction
 
